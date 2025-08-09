@@ -37,14 +37,68 @@ h1 {
     font-weight: bold;
 }
 
+.game-area {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 30px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
 .face-up-cards {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 8px;
     max-width: 100%;
-    margin: 0 auto 20px;
     padding: 0 5px;
     position: relative;
+}
+
+.deck-area {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+.deck-stack {
+    position: relative;
+    width: 110px;
+    height: 147px; /* Same aspect ratio as cards (3:4) */
+}
+
+.deck-card {
+    position: absolute;
+    width: 110px;
+    height: 147px;
+    background: #1a4b8c;
+    border: 2px solid #2c5aa0;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+    background-image: 
+        repeating-linear-gradient(45deg, 
+            transparent, 
+            transparent 10px, 
+            rgba(255,255,255,0.1) 10px, 
+            rgba(255,255,255,0.1) 20px);
+}
+
+.deck-card::before {
+    content: '🂠';
+    font-size: 3rem;
+    color: rgba(255, 255, 255, 0.8);
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+}
+
+.deck-label {
+    font-size: 0.9rem;
+    font-weight: bold;
+    color: white;
+    text-align: center;
 }
 
 .card {
@@ -325,6 +379,24 @@ h1 {
         padding: 8px;
     }
     
+    .game-area {
+        gap: 20px;
+    }
+    
+    .deck-stack {
+        width: 90px;
+        height: 120px;
+    }
+    
+    .deck-card {
+        width: 90px;
+        height: 120px;
+    }
+    
+    .deck-card::before {
+        font-size: 2.5rem;
+    }
+    
     h1 {
         font-size: 1.8rem;
         margin-bottom: 10px;
@@ -388,6 +460,30 @@ h1 {
 @media (max-width: 480px) {
     .game-container {
         padding: 5px;
+    }
+    
+    .game-area {
+        flex-direction: column;
+        gap: 15px;
+        align-items: center;
+    }
+    
+    .deck-stack {
+        width: 80px;
+        height: 107px;
+    }
+    
+    .deck-card {
+        width: 80px;
+        height: 107px;
+    }
+    
+    .deck-card::before {
+        font-size: 2rem;
+    }
+    
+    .deck-label {
+        font-size: 0.8rem;
     }
     
     h1 {

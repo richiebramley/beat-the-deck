@@ -87,6 +87,7 @@ class Game {
         }
         
         this.renderFaceUpCards();
+        this.renderDeckStack();
         this.updateGameInfo();
         this.updateGameStatus();
     }
@@ -114,6 +115,51 @@ class Game {
                 container.appendChild(cardElement);
             }
         });
+    }
+
+    renderDeckStack() {
+        const deckStackContainer = document.getElementById('deck-stack');
+        deckStackContainer.innerHTML = '';
+        
+        const remainingCards = this.deck.remainingCards();
+        
+        // Show a visual stack based on remaining cards
+        // Create multiple overlapping face-down cards to show depth
+        const maxVisibleCards = Math.min(5, Math.ceil(remainingCards / 10)); // Show 1-5 visible cards
+        
+        for (let i = 0; i < maxVisibleCards; i++) {
+            const deckCard = document.createElement('div');
+            deckCard.className = 'deck-card';
+            
+            // Offset each card slightly to create stack effect
+            deckCard.style.top = `${i * 2}px`;
+            deckCard.style.left = `${i * 2}px`;
+            deckCard.style.zIndex = maxVisibleCards - i;
+            
+            // Add slight rotation for more natural look
+            deckCard.style.transform = `rotate(${(i - 2) * 1}deg)`;
+            
+            deckStackContainer.appendChild(deckCard);
+        }
+        
+        // If no cards remaining, show empty space
+        if (remainingCards === 0) {
+            const emptySpace = document.createElement('div');
+            emptySpace.className = 'deck-empty';
+            emptySpace.textContent = 'Empty';
+            emptySpace.style.cssText = `
+                width: 110px;
+                height: 147px;
+                border: 2px dashed #666;
+                border-radius: 8px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: #666;
+                font-style: italic;
+            `;
+            deckStackContainer.appendChild(emptySpace);
+        }
     }
 
     createCardElement(card, stackIndex) {
@@ -243,6 +289,7 @@ class Game {
         // Add the card to the stack immediately for visual feedback
         this.faceUpStacks[this.selectedStackIndex].push(this.lastDrawnCard);
         this.renderFaceUpCards();
+        this.renderDeckStack();
         
         if (isCorrect) {
             // Card stays on the stack, continue after a brief pause
