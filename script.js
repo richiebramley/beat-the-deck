@@ -268,17 +268,15 @@ class Game {
         this.gameState = 'showing-result';
         this.hideGameControls();
         
-        // Add the card to the stack immediately for visual feedback
-        this.faceUpStacks[this.selectedStackIndex].push(this.lastDrawnCard);
-        this.renderFaceUpCards();
-        this.renderRemainingDeck();
+        // Start the card animation from deck to selected stack
+        this.animateCardToStack(isCorrect);
         
         if (isCorrect) {
-            // Card stays on the stack, continue after a brief pause
-            setTimeout(() => this.continueAfterCorrectGuess(), 1000);
+            // Card stays on the stack, continue after animation completes
+            setTimeout(() => this.continueAfterCorrectGuess(), 1800);
         } else {
             // Show the card for 2 seconds, then burn the stack
-            setTimeout(() => this.burnStack(), 2000);
+            setTimeout(() => this.burnStack(), 2800);
         }
     }
 
@@ -292,6 +290,77 @@ class Game {
         } else {
             return drawnCard.value < currentCard.value;
         }
+    }
+
+    animateCardToStack(isCorrect) {
+        // Get the positions of the deck and target stack
+        const deckElement = document.getElementById('remaining-deck');
+        const faceUpContainer = document.getElementById('face-up-cards');
+        
+        if (!deckElement || !faceUpContainer) return;
+        
+        const deckRect = deckElement.getBoundingClientRect();
+        const containerRect = faceUpContainer.getBoundingClientRect();
+        
+        // Calculate target position based on selected stack
+        const row = Math.floor(this.selectedStackIndex / 3);
+        const col = this.selectedStackIndex % 3;
+        const containerStyle = window.getComputedStyle(faceUpContainer);
+        const gap = parseInt(containerStyle.gap) || 8;
+        const cardWidth = (containerRect.width - (2 * gap)) / 3;
+        const cardHeight = cardWidth * (4/3);
+        
+        const targetX = containerRect.left + col * (cardWidth + gap) + (cardWidth / 2);
+        const targetY = containerRect.top + row * (cardHeight + gap) + (cardHeight / 2);
+        
+        // Create flying card element
+        const flyingCard = document.createElement('div');
+        flyingCard.className = 'flying-card';
+        
+        // Responsive card size calculation
+        const cardSize = window.innerWidth <= 480 ? {width: 60, height: 80} : 
+                        window.innerWidth <= 768 ? {width: 70, height: 95} : 
+                        {width: 80, height: 110};
+        
+        flyingCard.style.left = `${deckRect.left + deckRect.width/2 - cardSize.width/2}px`;
+        flyingCard.style.top = `${deckRect.top + deckRect.height/2 - cardSize.height/2}px`;
+        
+        document.body.appendChild(flyingCard);
+        
+        // Update remaining deck immediately
+        this.renderRemainingDeck();
+        
+        // Animate to target position
+        setTimeout(() => {
+            flyingCard.style.transition = 'all 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+            flyingCard.style.left = `${targetX - cardSize.width/2}px`;
+            flyingCard.style.top = `${targetY - cardSize.height/2}px`;
+            
+            // Start flip animation
+            flyingCard.classList.add('flipping');
+        }, 50);
+        
+        // Reveal the card halfway through animation
+        setTimeout(() => {
+            flyingCard.classList.add('revealed', this.lastDrawnCard.getColor());
+            flyingCard.innerHTML = `
+                <div class="card-content">
+                    <div class="rank">${this.lastDrawnCard.getDisplayRank()}</div>
+                    <div class="suit">${this.lastDrawnCard.getSuitSymbol()}</div>
+                    <div class="rank">${this.lastDrawnCard.getDisplayRank()}</div>
+                </div>
+            `;
+        }, 450);
+        
+        // Complete animation and update game state
+        setTimeout(() => {
+            // Add the card to the stack and render
+            this.faceUpStacks[this.selectedStackIndex].push(this.lastDrawnCard);
+            this.renderFaceUpCards();
+            
+            // Remove flying card
+            flyingCard.remove();
+        }, 900);
     }
 
     continueAfterCorrectGuess() {
