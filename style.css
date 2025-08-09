@@ -37,68 +37,14 @@ h1 {
     font-weight: bold;
 }
 
-.game-area {
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-    gap: 30px;
-    margin-bottom: 20px;
-    flex-wrap: wrap;
-}
-
 .face-up-cards {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 8px;
     max-width: 100%;
+    margin: 0 auto 20px;
     padding: 0 5px;
     position: relative;
-}
-
-.deck-area {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 10px;
-}
-
-.deck-stack {
-    position: relative;
-    width: 110px;
-    height: 147px; /* Same aspect ratio as cards (3:4) */
-}
-
-.deck-card {
-    position: absolute;
-    width: 110px;
-    height: 147px;
-    background: #1a4b8c;
-    border: 2px solid #2c5aa0;
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
-    background-image: 
-        repeating-linear-gradient(45deg, 
-            transparent, 
-            transparent 10px, 
-            rgba(255,255,255,0.1) 10px, 
-            rgba(255,255,255,0.1) 20px);
-}
-
-.deck-card::before {
-    content: '🂠';
-    font-size: 3rem;
-    color: rgba(255, 255, 255, 0.8);
-    text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
-}
-
-.deck-label {
-    font-size: 0.9rem;
-    font-weight: bold;
-    color: white;
-    text-align: center;
 }
 
 .card {
@@ -234,6 +180,54 @@ h1 {
 
 .card.black {
     color: #1a1a1a;
+}
+
+.remaining-deck {
+    text-align: center;
+    margin: 20px 0;
+}
+
+.deck-label {
+    font-size: 1rem;
+    font-weight: bold;
+    margin-bottom: 10px;
+    color: white;
+}
+
+.deck-cards {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 2px;
+    max-width: 100%;
+    margin: 0 auto;
+}
+
+.deck-card {
+    width: 20px;
+    height: 28px;
+    background: linear-gradient(135deg, #1a237e, #3949ab);
+    border: 1px solid #5c6bc0;
+    border-radius: 3px;
+    position: relative;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.deck-card::before {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    right: 2px;
+    bottom: 2px;
+    background: repeating-linear-gradient(
+        45deg,
+        transparent,
+        transparent 2px,
+        rgba(255, 255, 255, 0.1) 2px,
+        rgba(255, 255, 255, 0.1) 4px
+    );
+    border-radius: 2px;
 }
 
 .game-controls {
@@ -379,24 +373,6 @@ h1 {
         padding: 8px;
     }
     
-    .game-area {
-        gap: 20px;
-    }
-    
-    .deck-stack {
-        width: 90px;
-        height: 120px;
-    }
-    
-    .deck-card {
-        width: 90px;
-        height: 120px;
-    }
-    
-    .deck-card::before {
-        font-size: 2.5rem;
-    }
-    
     h1 {
         font-size: 1.8rem;
         margin-bottom: 10px;
@@ -455,35 +431,25 @@ h1 {
         margin: 10px 0;
         padding: 10px;
     }
+    
+    .remaining-deck {
+        margin: 15px 0;
+    }
+    
+    .deck-label {
+        font-size: 0.9rem;
+        margin-bottom: 8px;
+    }
+    
+    .deck-card {
+        width: 18px;
+        height: 25px;
+    }
 }
 
 @media (max-width: 480px) {
     .game-container {
         padding: 5px;
-    }
-    
-    .game-area {
-        flex-direction: column;
-        gap: 15px;
-        align-items: center;
-    }
-    
-    .deck-stack {
-        width: 80px;
-        height: 107px;
-    }
-    
-    .deck-card {
-        width: 80px;
-        height: 107px;
-    }
-    
-    .deck-card::before {
-        font-size: 2rem;
-    }
-    
-    .deck-label {
-        font-size: 0.8rem;
     }
     
     h1 {
@@ -540,6 +506,20 @@ h1 {
         font-size: 0.8rem;
         padding: 8px;
     }
+    
+    .remaining-deck {
+        margin: 10px 0;
+    }
+    
+    .deck-label {
+        font-size: 0.8rem;
+        margin-bottom: 6px;
+    }
+    
+    .deck-card {
+        width: 16px;
+        height: 22px;
+    }
 }
 
 @media (max-width: 360px) {
@@ -563,5 +543,10 @@ h1 {
     .guess-btn {
         font-size: 0.8rem;
         padding: 6px 10px;
+    }
+    
+    .deck-card {
+        width: 14px;
+        height: 20px;
     }
 }
