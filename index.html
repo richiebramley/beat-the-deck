@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Beat the Deck - Card Game</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="game-container">
+        <header>
+            <h1>Beat the Deck</h1>
+            <div class="game-info">
+                <div class="cards-remaining">Cards Left: <span id="cards-remaining">43</span></div>
+                <div class="active-decks">Active Decks: <span id="active-decks">9</span></div>
+            </div>
+        </header>
+
+        <main>
+            <div class="face-up-cards" id="face-up-cards">
+                <!-- 9 face-up cards will be placed here -->
+            </div>
+
+            <div class="game-controls" id="game-controls" style="display: none;">
+                <div class="selected-card-info">
+                    <p>Selected Card: <span id="selected-card"></span></p>
+                    <p>Will the next card be:</p>
+                </div>
+                <div class="buttons">
+                    <button id="higher-btn" class="guess-btn">Higher</button>
+                    <button id="lower-btn" class="guess-btn">Lower</button>
+                </div>
+                <button id="cancel-btn" class="cancel-btn">Cancel Selection</button>
+            </div>
+
+            <div class="game-status" id="game-status">
+                <p>Select one of the 9 face-up cards to start guessing!</p>
+            </div>
+
+
+        </main>
+
+        <div class="game-over" id="game-over" style="display: none;">
+            <div class="game-over-content">
+                <h2 id="game-over-title"></h2>
+                <p id="game-over-message"></p>
+                <button id="new-game-btn">New Game</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

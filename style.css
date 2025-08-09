@@ -1,0 +1,460 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Arial', sans-serif;
+    background: linear-gradient(135deg, #0f4c3a, #2d8659);
+    min-height: 100vh;
+    color: white;
+    overflow-x: hidden;
+}
+
+.game-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 10px;
+}
+
+header {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+h1 {
+    font-size: 2rem;
+    margin-bottom: 15px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.game-info {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    font-size: 1rem;
+    font-weight: bold;
+}
+
+.face-up-cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    max-width: 100%;
+    margin: 0 auto 20px;
+    padding: 0 5px;
+}
+
+.card {
+    width: 100%;
+    aspect-ratio: 3/4;
+    max-width: 110px;
+    background: white;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    color: black;
+    font-size: 1.2rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+    position: relative;
+    padding: 6px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+    margin: 0 auto;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+}
+
+.card.selected {
+    border-color: #ffd700;
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.5);
+}
+
+.card.new-card {
+    animation: newCardPulse 2s ease-in-out;
+    background: linear-gradient(45deg, #fff, #e3f2fd, #fff);
+    border-color: #2196f3;
+    box-shadow: 0 0 20px rgba(33, 150, 243, 0.6);
+}
+
+.card.new-card-incorrect {
+    animation: incorrectCardPulse 2s ease-in-out;
+    background: linear-gradient(45deg, #fff, #ffebee, #fff);
+    border-color: #f44336;
+    box-shadow: 0 0 20px rgba(244, 67, 54, 0.6);
+}
+
+@keyframes newCardPulse {
+    0% {
+        transform: scale(1);
+        box-shadow: 0 0 20px rgba(33, 150, 243, 0.6);
+        background: linear-gradient(45deg, #fff, #e3f2fd, #fff);
+    }
+    25% {
+        transform: scale(1.05);
+        box-shadow: 0 0 30px rgba(33, 150, 243, 0.8);
+        background: linear-gradient(45deg, #e3f2fd, #bbdefb, #e3f2fd);
+    }
+    50% {
+        transform: scale(1.02);
+        box-shadow: 0 0 25px rgba(33, 150, 243, 0.7);
+        background: linear-gradient(45deg, #fff, #e3f2fd, #fff);
+    }
+    75% {
+        transform: scale(1.05);
+        box-shadow: 0 0 30px rgba(33, 150, 243, 0.8);
+        background: linear-gradient(45deg, #e3f2fd, #bbdefb, #e3f2fd);
+    }
+    100% {
+        transform: scale(1);
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+        background: white;
+    }
+}
+
+@keyframes incorrectCardPulse {
+    0% {
+        transform: scale(1);
+        box-shadow: 0 0 20px rgba(244, 67, 54, 0.6);
+        background: linear-gradient(45deg, #fff, #ffebee, #fff);
+    }
+    25% {
+        transform: scale(1.05);
+        box-shadow: 0 0 30px rgba(244, 67, 54, 0.8);
+        background: linear-gradient(45deg, #ffebee, #ffcdd2, #ffebee);
+    }
+    50% {
+        transform: scale(1.02);
+        box-shadow: 0 0 25px rgba(244, 67, 54, 0.7);
+        background: linear-gradient(45deg, #fff, #ffebee, #fff);
+    }
+    75% {
+        transform: scale(1.05);
+        box-shadow: 0 0 30px rgba(244, 67, 54, 0.8);
+        background: linear-gradient(45deg, #ffebee, #ffcdd2, #ffebee);
+    }
+    100% {
+        transform: scale(1);
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+        background: white;
+    }
+}
+
+.card.burned {
+    background: #2c2c2c;
+    color: #666;
+    cursor: not-allowed;
+    opacity: 0.8;
+    border: 2px solid #444;
+}
+
+.card.burned:hover {
+    transform: none;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+.burned-indicator {
+    font-size: 0.8rem;
+    font-weight: bold;
+    text-align: center;
+    margin-top: 50%;
+    transform: translateY(-50%);
+}
+
+.card .suit {
+    font-size: 1.5rem;
+}
+
+.card.red {
+    color: #d32f2f;
+}
+
+.card.black {
+    color: #1a1a1a;
+}
+
+.game-controls {
+    text-align: center;
+    margin: 15px 0;
+    padding: 15px 10px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    backdrop-filter: blur(10px);
+}
+
+.selected-card-info {
+    margin-bottom: 15px;
+    font-size: 1rem;
+}
+
+.buttons {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-bottom: 10px;
+}
+
+.guess-btn {
+    padding: 12px 20px;
+    font-size: 1.1rem;
+    font-weight: bold;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    min-width: 100px;
+    flex: 1;
+    max-width: 140px;
+}
+
+#higher-btn {
+    background: #4caf50;
+    color: white;
+}
+
+#higher-btn:hover {
+    background: #45a049;
+    transform: translateY(-2px);
+}
+
+#lower-btn {
+    background: #f44336;
+    color: white;
+}
+
+#lower-btn:hover {
+    background: #da190b;
+    transform: translateY(-2px);
+}
+
+.cancel-btn {
+    padding: 8px 16px;
+    background: #666;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+    font-size: 0.9rem;
+}
+
+.cancel-btn:hover {
+    background: #555;
+}
+
+.game-status {
+    text-align: center;
+    font-size: 1rem;
+    margin: 15px 0;
+    padding: 12px 10px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    backdrop-filter: blur(10px);
+}
+
+
+
+.game-over {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.game-over-content {
+    background: white;
+    color: black;
+    padding: 40px;
+    border-radius: 12px;
+    text-align: center;
+    max-width: 400px;
+    margin: 20px;
+}
+
+.game-over-content h2 {
+    margin-bottom: 20px;
+    font-size: 2rem;
+}
+
+.game-over-content p {
+    margin-bottom: 30px;
+    font-size: 1.2rem;
+}
+
+#new-game-btn {
+    padding: 15px 30px;
+    background: #4caf50;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+#new-game-btn:hover {
+    background: #45a049;
+}
+
+@media (max-width: 768px) {
+    .game-container {
+        padding: 8px;
+    }
+    
+    h1 {
+        font-size: 1.8rem;
+        margin-bottom: 10px;
+    }
+    
+    header {
+        margin-bottom: 15px;
+    }
+    
+    .game-info {
+        gap: 20px;
+        font-size: 0.9rem;
+    }
+    
+    .face-up-cards {
+        gap: 6px;
+        margin-bottom: 15px;
+    }
+    
+    .card {
+        font-size: 1rem;
+        padding: 4px;
+        border-radius: 6px;
+    }
+    
+    .card .suit {
+        font-size: 1.2rem;
+    }
+    
+    .burned-indicator {
+        font-size: 0.7rem;
+    }
+    
+    .game-controls {
+        margin: 10px 0;
+        padding: 12px 8px;
+    }
+    
+    .selected-card-info {
+        font-size: 0.9rem;
+        margin-bottom: 12px;
+    }
+    
+    .buttons {
+        gap: 10px;
+    }
+    
+    .guess-btn {
+        padding: 10px 15px;
+        font-size: 1rem;
+        min-width: 80px;
+    }
+    
+    .game-status {
+        font-size: 0.9rem;
+        margin: 10px 0;
+        padding: 10px;
+    }
+}
+
+@media (max-width: 480px) {
+    .game-container {
+        padding: 5px;
+    }
+    
+    h1 {
+        font-size: 1.5rem;
+        margin-bottom: 8px;
+    }
+    
+    .game-info {
+        flex-direction: column;
+        gap: 8px;
+        font-size: 0.8rem;
+    }
+    
+    .face-up-cards {
+        gap: 4px;
+        padding: 0 2px;
+    }
+    
+    .card {
+        font-size: 0.9rem;
+        padding: 3px;
+        max-width: 90px;
+    }
+    
+    .card .suit {
+        font-size: 1rem;
+    }
+    
+    .burned-indicator {
+        font-size: 0.6rem;
+    }
+    
+    .guess-btn {
+        padding: 8px 12px;
+        font-size: 0.9rem;
+        min-width: 70px;
+    }
+    
+    .cancel-btn {
+        padding: 6px 12px;
+        font-size: 0.8rem;
+    }
+    
+    .game-controls {
+        padding: 10px 5px;
+    }
+    
+    .selected-card-info {
+        font-size: 0.8rem;
+    }
+    
+    .game-status {
+        font-size: 0.8rem;
+        padding: 8px;
+    }
+}
+
+@media (max-width: 360px) {
+    h1 {
+        font-size: 1.3rem;
+    }
+    
+    .card {
+        font-size: 0.8rem;
+        max-width: 80px;
+    }
+    
+    .card .suit {
+        font-size: 0.9rem;
+    }
+    
+    .burned-indicator {
+        font-size: 0.5rem;
+    }
+    
+    .guess-btn {
+        font-size: 0.8rem;
+        padding: 6px 10px;
+    }
+}
