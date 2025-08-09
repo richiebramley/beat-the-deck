@@ -177,8 +177,43 @@ class Game {
     showGameControls() {
         const selectedCard = this.faceUpStacks[this.selectedStackIndex][this.faceUpStacks[this.selectedStackIndex].length - 1];
         document.getElementById('selected-card').textContent = `${selectedCard.getDisplayRank()}${selectedCard.getSuitSymbol()}`;
-        document.getElementById('game-controls').style.display = 'block';
+        
+        const gameControls = document.getElementById('game-controls');
+        gameControls.style.display = 'block';
+        
+        // Position the controls over the selected card
+        this.positionControlsOverCard();
+        
         document.getElementById('game-status').style.display = 'none';
+    }
+
+    positionControlsOverCard() {
+        const gameControls = document.getElementById('game-controls');
+        const faceUpContainer = document.getElementById('face-up-cards');
+        
+        // Calculate position based on grid layout (3x3)
+        const row = Math.floor(this.selectedStackIndex / 3);
+        const col = this.selectedStackIndex % 3;
+        
+        // Get container dimensions
+        const containerRect = faceUpContainer.getBoundingClientRect();
+        const containerStyle = window.getComputedStyle(faceUpContainer);
+        const gap = parseInt(containerStyle.gap) || 8;
+        
+        // Calculate card size and position
+        const cardWidth = (containerRect.width - (2 * gap)) / 3;
+        const cardHeight = cardWidth * (4/3); // aspect-ratio 3/4
+        
+        const cardLeft = col * (cardWidth + gap);
+        const cardTop = row * (cardHeight + gap);
+        
+        // Position controls in center of selected card
+        const centerX = cardLeft + (cardWidth / 2);
+        const centerY = cardTop + (cardHeight / 2);
+        
+        gameControls.style.left = `${centerX}px`;
+        gameControls.style.top = `${centerY}px`;
+        gameControls.style.transform = 'translate(-50%, -50%)';
     }
 
     hideGameControls() {

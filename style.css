@@ -44,6 +44,7 @@ h1 {
     max-width: 100%;
     margin: 0 auto 20px;
     padding: 0 5px;
+    position: relative;
 }
 
 .card {
@@ -182,37 +183,46 @@ h1 {
 }
 
 .game-controls {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
     text-align: center;
-    margin: 15px 0;
-    padding: 15px 10px;
-    background: rgba(255, 255, 255, 0.1);
+    padding: 10px;
+    background: rgba(0, 0, 0, 0.9);
     border-radius: 8px;
     backdrop-filter: blur(10px);
+    z-index: 100;
+    min-width: 200px;
+    border: 2px solid #ffd700;
+    box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
 }
 
 .selected-card-info {
-    margin-bottom: 15px;
-    font-size: 1rem;
+    margin-bottom: 12px;
+    font-size: 0.9rem;
+    color: white;
+    font-weight: bold;
 }
 
 .buttons {
     display: flex;
     justify-content: center;
-    gap: 15px;
-    margin-bottom: 10px;
+    gap: 12px;
+    margin-bottom: 8px;
 }
 
 .guess-btn {
-    padding: 12px 20px;
-    font-size: 1.1rem;
+    padding: 10px 16px;
+    font-size: 1rem;
     font-weight: bold;
     border: none;
     border-radius: 6px;
     cursor: pointer;
     transition: all 0.3s ease;
-    min-width: 100px;
+    min-width: 80px;
     flex: 1;
-    max-width: 140px;
+    max-width: 100px;
 }
 
 #higher-btn {
@@ -236,14 +246,14 @@ h1 {
 }
 
 .cancel-btn {
-    padding: 8px 16px;
+    padding: 6px 12px;
     background: #666;
     color: white;
     border: none;
     border-radius: 4px;
     cursor: pointer;
     transition: background 0.3s ease;
-    font-size: 0.9rem;
+    font-size: 0.8rem;
 }
 
 .cancel-btn:hover {
@@ -349,8 +359,8 @@ h1 {
     }
     
     .game-controls {
-        margin: 10px 0;
-        padding: 12px 8px;
+        padding: 8px;
+        min-width: 160px;
     }
     
     .selected-card-info {
@@ -422,7 +432,8 @@ h1 {
     }
     
     .game-controls {
-        padding: 10px 5px;
+        padding: 6px;
+        min-width: 140px;
     }
     
     .selected-card-info {
