@@ -118,16 +118,29 @@ class Game {
     }
 
     renderRemainingDeck() {
-        const deckContainer = document.getElementById('deck-cards');
-        deckContainer.innerHTML = '';
+        const remainingDeckContainer = document.getElementById('remaining-deck');
+        const deckCountElement = document.getElementById('deck-count');
+        
+        // Clear existing deck cards
+        remainingDeckContainer.innerHTML = '';
         
         const remainingCards = this.deck.remainingCards();
+        deckCountElement.textContent = remainingCards;
         
-        // Create face-down cards to represent remaining deck
-        for (let i = 0; i < remainingCards; i++) {
+        if (remainingCards === 0) {
+            return; // No cards left to show
+        }
+        
+        // Create a visual stack effect by showing multiple cards with slight offsets
+        const maxCardsToShow = Math.min(5, Math.ceil(remainingCards / 10)); // Show up to 5 card layers
+        
+        for (let i = 0; i < maxCardsToShow; i++) {
             const deckCard = document.createElement('div');
             deckCard.className = 'deck-card';
-            deckContainer.appendChild(deckCard);
+            deckCard.style.top = `${-i * 2}px`;
+            deckCard.style.left = `${-i * 1}px`;
+            deckCard.style.zIndex = maxCardsToShow - i;
+            remainingDeckContainer.appendChild(deckCard);
         }
     }
 
@@ -313,7 +326,6 @@ class Game {
         this.gameState = 'selecting';
         this.lastDrawnCard = null; // Clear the drawn card reference
         this.lastGuessResult = null; // Clear the guess result
-        this.renderRemainingDeck();
         this.updateGameInfo();
         this.updateGameStatus();
     }
@@ -329,9 +341,12 @@ class Game {
     }
 
     updateGameInfo() {
-        document.getElementById('cards-remaining').textContent = this.deck.remainingCards();
+        const remainingCards = this.deck.remainingCards();
+        document.getElementById('cards-remaining').textContent = remainingCards;
+        document.getElementById('deck-count').textContent = remainingCards;
         const activeStacks = this.faceUpStacks.filter(stack => stack !== 'burned' && stack.length > 0).length;
         document.getElementById('active-decks').textContent = activeStacks;
+        this.renderRemainingDeck();
     }
 
     updateGameStatus() {
