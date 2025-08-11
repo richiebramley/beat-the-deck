@@ -251,13 +251,104 @@ class Game {
         }
     }
 
+    triggerCelebration() {
+        console.log('🎉 Triggering celebration animation!');
+        
+        // Create 52 celebration cards that fly in different directions
+        for (let i = 0; i < 52; i++) {
+            setTimeout(() => {
+                this.createCelebrationCard();
+            }, i * 100); // Stagger the creation for a wave effect
+        }
+    }
+
+    createCelebrationCard() {
+        const card = document.createElement('div');
+        card.className = 'celebration-card';
+        
+        // Generate random card content
+        const suits = ['♠', '♥', '♦', '♣'];
+        const ranks = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
+        const randomSuit = suits[Math.floor(Math.random() * suits.length)];
+        const randomRank = ranks[Math.floor(Math.random() * ranks.length)];
+        const isRed = randomSuit === '♥' || randomSuit === '♦';
+        
+        // Add color class
+        if (isRed) {
+            card.classList.add('red');
+        } else {
+            card.classList.add('black');
+        }
+        
+        // Create card content
+        card.innerHTML = `
+            <div class="rank top-left">${randomRank}</div>
+            <div class="suit top-left">${randomSuit}</div>
+            <div class="center-suit">${randomSuit}</div>
+            <div class="rank bottom-right">${randomRank}</div>
+            <div class="suit bottom-right">${randomSuit}</div>
+        `;
+        
+        // Random starting position (center of screen)
+        const startX = window.innerWidth / 2;
+        const startY = window.innerHeight / 2;
+        
+        // Random flight direction and rotation
+        const angle = Math.random() * Math.PI * 2; // Random angle 0-360°
+        const distance = 100 + Math.random() * 200; // Random distance 100-300px
+        const flyX = Math.cos(angle) * distance;
+        const flyY = Math.sin(angle) * distance;
+        const rotate = (Math.random() - 0.5) * 720; // Random rotation -360° to +360°
+        
+        // Set CSS custom properties for the animation
+        card.style.setProperty('--fly-x', flyX + 'px');
+        card.style.setProperty('--fly-y', flyY + 'px');
+        card.style.setProperty('--rotate', rotate + 'deg');
+        
+        // Position the card
+        card.style.left = startX + 'px';
+        card.style.top = startY + 'px';
+        
+        // Add to DOM
+        document.body.appendChild(card);
+        
+        // Remove the card element after animation completes
+        setTimeout(() => {
+            if (card.parentNode) {
+                card.parentNode.removeChild(card);
+            }
+        }, 3000);
+    }
+
+    // Console test method for celebration animation
+    testCelebration() {
+        console.log('🎉 Testing celebration animation...');
+        this.triggerCelebration();
+    }
+
+    // Console test method for full winning sequence
+    testWinningSequence() {
+        console.log('🏆 Testing full winning sequence...');
+        
+        // Simulate the final winning scenario
+        console.log('1️⃣ Final card being placed...');
+        
+        // Trigger celebration immediately (simulating final card placement)
+        this.triggerCelebration();
+        
+        // Show win message after celebration
+        setTimeout(() => {
+            console.log('2️⃣ Celebration complete! Showing win screen...');
+            this.endGame(true);
+        }, 3000);
+        
+        console.log('🎯 Full winning sequence initiated!');
+        console.log('📱 Watch the celebration animation for 3 seconds, then the win screen will appear.');
+    }
+
     makeGuess(guess) {
         if (this.gameState !== 'guessing') return;
-        if (this.deck.remainingCards() === 0) {
-            this.endGame(true); // Win - no more cards to draw
-            return;
-        }
-
+        
         this.lastGuess = guess;
         this.lastDrawnCard = this.deck.drawCard();
         
@@ -278,6 +369,12 @@ class Game {
         this.renderFaceUpCards();
         
         if (isCorrect) {
+            // Check if this was the final card and player won
+            if (this.deck.remainingCards() === 0) {
+                this.triggerCelebration();
+                setTimeout(() => this.endGame(true), 3000); // Show celebration for 3 seconds
+                return;
+            }
             // Card stays on the stack, continue after a brief pause
             setTimeout(() => this.continueAfterCorrectGuess(), 1000);
         } else {
@@ -405,5 +502,12 @@ class Game {
 
 // Start the game when the page loads
 document.addEventListener('DOMContentLoaded', () => {
-    new Game();
+    const game = new Game();
+    
+    // Make game instance globally accessible for console testing
+    window.game = game;
+    
+    console.log('🎮 Beat the Deck game loaded!');
+    console.log('🎉 To test celebration animation, type: game.testCelebration()');
+    console.log('🏆 To test full winning sequence, type: game.testWinningSequence()');
 });
