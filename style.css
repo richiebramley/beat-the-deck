@@ -375,15 +375,7 @@ h1 {
     background: #555;
 }
 
-.game-status {
-    text-align: center;
-    font-size: 1rem;
-    margin: 15px 0;
-    padding: 12px 10px;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 6px;
-    backdrop-filter: blur(10px);
-}
+
 
 
 
@@ -517,11 +509,7 @@ h1 {
         min-width: 80px;
     }
     
-    .game-status {
-        font-size: 0.9rem;
-        margin: 10px 0;
-        padding: 10px;
-    }
+
 }
 
 @media (max-width: 480px) {
@@ -617,10 +605,7 @@ h1 {
         font-size: 0.8rem;
     }
     
-    .game-status {
-        font-size: 0.8rem;
-        padding: 8px;
-    }
+
 }
 
 @media (max-width: 360px) {

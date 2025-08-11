@@ -89,7 +89,6 @@ class Game {
         this.renderFaceUpCards();
         this.renderRemainingDeck();
         this.updateGameInfo();
-        this.updateGameStatus();
     }
 
     bindEvents() {
@@ -199,7 +198,6 @@ class Game {
         
         this.renderFaceUpCards();
         this.showGameControls();
-        this.updateGameStatus();
     }
 
     showGameControls() {
@@ -370,7 +368,6 @@ class Game {
         this.lastGuessResult = null; // Clear the guess result
         this.renderFaceUpCards(); // Re-render to remove selected state
         this.updateGameInfo();
-        this.updateGameStatus();
     }
 
     burnStack() {
@@ -396,7 +393,6 @@ class Game {
         this.lastDrawnCard = null; // Clear the drawn card reference
         this.lastGuessResult = null; // Clear the guess result
         this.updateGameInfo();
-        this.updateGameStatus();
     }
 
 
@@ -406,7 +402,6 @@ class Game {
         this.gameState = 'selecting';
         this.hideGameControls();
         this.renderFaceUpCards();
-        this.updateGameStatus();
     }
 
     updateGameInfo() {
@@ -418,15 +413,7 @@ class Game {
         this.renderRemainingDeck();
     }
 
-    updateGameStatus() {
-        const statusElement = document.getElementById('game-status');
-        
-        if (this.gameState === 'selecting') {
-            statusElement.textContent = 'Select one of the face-up cards to start guessing!';
-        } else if (this.gameState === 'guessing') {
-            statusElement.textContent = 'Make your guess: Higher or Lower?';
-        }
-    }
+
 
     endGame(won) {
         this.gameState = 'game-over';
