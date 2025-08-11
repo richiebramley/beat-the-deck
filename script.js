@@ -96,12 +96,33 @@ class Game {
             if (e.target && e.target.id === 'higher-btn') {
                 console.log('Higher button clicked'); // Debug log
                 this.makeGuess('higher');
+                // Track game interaction
+                if (typeof gtag !== 'undefined') {
+                    gtag('event', 'game_interaction', {
+                        'event_category': 'gameplay',
+                        'event_label': 'higher_guess'
+                    });
+                }
             } else if (e.target && e.target.id === 'lower-btn') {
                 console.log('Lower button clicked'); // Debug log
                 this.makeGuess('lower');
+                // Track game interaction
+                if (typeof gtag !== 'undefined') {
+                    gtag('event', 'game_interaction', {
+                        'event_category': 'gameplay',
+                        'event_label': 'lower_guess'
+                    });
+                }
             } else if (e.target && e.target.id === 'new-game-btn') {
                 console.log('New Game button clicked'); // Debug log
                 this.startNewGame();
+                // Track new game
+                if (typeof gtag !== 'undefined') {
+                    gtag('event', 'game_start', {
+                        'event_category': 'gameplay',
+                        'event_label': 'new_game'
+                    });
+                }
             }
         });
         console.log('All game button event delegation set up'); // Debug log
@@ -282,6 +303,14 @@ class Game {
 
     triggerCelebration() {
         console.log('🎉 Triggering celebration animation!');
+        
+        // Track celebration event
+        if (typeof gtag !== 'undefined') {
+            gtag('event', 'celebration_triggered', {
+                'event_category': 'gameplay',
+                'event_label': 'win_celebration'
+            });
+        }
         
         // Create 52 celebration cards that fly in different directions
         for (let i = 0; i < 52; i++) {
@@ -477,6 +506,15 @@ class Game {
         const messageElement = document.getElementById('game-over-message');
         
         const remainingCards = this.deck.remainingCards();
+        
+        // Track game outcome
+        if (typeof gtag !== 'undefined') {
+            gtag('event', 'game_end', {
+                'event_category': 'gameplay',
+                'event_label': won ? 'win' : 'lose',
+                'value': remainingCards || 0
+            });
+        }
         
         if (won) {
             titleElement.textContent = 'Congratulations!';
