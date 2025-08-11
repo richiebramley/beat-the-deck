@@ -42,41 +42,122 @@ h1 {
     grid-template-columns: repeat(3, 1fr);
     gap: 8px;
     max-width: 100%;
-    margin: 0 auto 15px;
+    margin: 0 auto 20px;
     padding: 0 5px;
-    position: relative;
 }
 
 .card {
     width: 100%;
     aspect-ratio: 3/4;
     max-width: 110px;
-    background: white;
-    border-radius: 8px;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    align-items: center;
+    background: linear-gradient(145deg, #ffffff, #f8f9fa);
+    border-radius: 12px;
+    position: relative;
     color: black;
     font-size: 1.2rem;
     font-weight: bold;
     cursor: pointer;
     transition: all 0.3s ease;
     border: 2px solid transparent;
-    position: relative;
-    padding: 6px;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+    padding: 8px;
+    box-shadow: 
+        0 4px 8px rgba(0, 0, 0, 0.15),
+        0 1px 3px rgba(0, 0, 0, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.8);
     margin: 0 auto;
+    font-family: 'Georgia', serif;
 }
 
 .card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 
+        0 8px 16px rgba(0, 0, 0, 0.2),
+        0 4px 8px rgba(0, 0, 0, 0.15),
+        inset 0 1px 0 rgba(255, 255, 255, 0.9);
 }
 
 .card.selected {
     border-color: #ffd700;
-    box-shadow: 0 0 15px rgba(255, 215, 0, 0.5);
+    border-width: 3px;
+    box-shadow: 
+        0 0 20px rgba(255, 215, 0, 0.6),
+        0 8px 16px rgba(0, 0, 0, 0.2),
+        0 4px 8px rgba(0, 0, 0, 0.15),
+        inset 0 1px 0 rgba(255, 255, 255, 0.9);
+    transform: translateY(-2px) scale(1.03);
+    position: relative;
+}
+
+.card.correct-guess {
+    border-color: #4caf50 !important;
+    border-width: 3px !important;
+    box-shadow: 0 0 20px rgba(76, 175, 80, 0.6) !important, 0 8px 16px rgba(0, 0, 0, 0.2), 0 4px 8px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+    transform: translateY(-2px) scale(1.03);
+}
+
+/* Floating action buttons for guessing */
+.floating-guess-buttons {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    z-index: 10;
+    pointer-events: none;
+}
+
+.floating-guess-buttons button {
+    pointer-events: auto;
+    width: 70px;
+    height: 40px;
+    border: none;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 900;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 
+        0 6px 16px rgba(0, 0, 0, 0.3),
+        0 2px 8px rgba(0, 0, 0, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    letter-spacing: 0.5px;
+}
+
+.floating-guess-buttons button:hover {
+    transform: scale(1.15);
+    box-shadow: 
+        0 8px 20px rgba(0, 0, 0, 0.4),
+        0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.floating-guess-buttons button:active {
+    transform: scale(0.9);
+    transition: transform 0.1s ease;
+}
+
+#higher-btn {
+    background: linear-gradient(145deg, #607d8b, #546e7a);
+    color: white;
+    margin-bottom: 5px;
+}
+
+#higher-btn:hover {
+    background: linear-gradient(145deg, #546e7a, #455a64);
+}
+
+#lower-btn {
+    background: linear-gradient(145deg, #757575, #616161);
+    color: white;
+    margin-top: 5px;
+}
+
+#lower-btn:hover {
+    background: linear-gradient(145deg, #616161, #424242);
 }
 
 .card.new-card {
@@ -150,230 +231,95 @@ h1 {
 }
 
 .card.burned {
-    background: #2c2c2c;
-    color: #666;
+    background: linear-gradient(145deg, #424242, #2c2c2c);
+    color: #888;
     cursor: not-allowed;
-    opacity: 0.8;
-    border: 2px solid #444;
+    opacity: 0.9;
+    border: 2px solid #555;
+    box-shadow: 
+        0 4px 8px rgba(0, 0, 0, 0.3),
+        0 1px 3px rgba(0, 0, 0, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
 .card.burned:hover {
     transform: none;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+    box-shadow: 
+        0 4px 8px rgba(0, 0, 0, 0.3),
+        0 1px 3px rgba(0, 0, 0, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
 .burned-indicator {
-    font-size: 0.8rem;
-    font-weight: bold;
+    font-size: 0.9rem;
+    font-weight: 900;
     text-align: center;
     margin-top: 50%;
     transform: translateY(-50%);
+    color: #aaa;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+    letter-spacing: 1px;
 }
 
-.card .suit {
-    font-size: 1.5rem;
-}
-
-.card.red {
-    color: #d32f2f;
-}
-
-.card.black {
-    color: #1a1a1a;
-}
-
-.remaining-deck-area {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin: 15px 0 20px;
-}
-
-.remaining-deck {
-    position: relative;
-    width: 80px;
-    height: 110px;
-    margin-bottom: 10px;
-}
-
-.deck-card {
+/* Card corner elements */
+.card .corner {
     position: absolute;
-    width: 80px;
-    height: 110px;
-    background: linear-gradient(135deg, #1a237e, #303f9f);
-    border: 2px solid #3f51b5;
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-}
-
-.deck-card::before {
-    content: "♠♥♣♦";
-    color: rgba(255, 255, 255, 0.3);
-    font-size: 1.2rem;
-    font-weight: bold;
-    text-align: center;
-}
-
-.deck-info {
-    text-align: center;
-    font-size: 0.9rem;
-    font-weight: bold;
-    color: white;
-    background: rgba(255, 255, 255, 0.1);
-    padding: 5px 12px;
-    border-radius: 15px;
-    backdrop-filter: blur(5px);
-}
-
-.flying-card {
-    position: fixed;
-    width: 80px;
-    height: 110px;
-    background: linear-gradient(135deg, #1a237e, #303f9f);
-    border: 2px solid #3f51b5;
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
-    z-index: 1000;
-    pointer-events: none;
-    transform-origin: center;
-}
-
-.flying-card::before {
-    content: "♠♥♣♦";
-    color: rgba(255, 255, 255, 0.3);
-    font-size: 1.2rem;
-    font-weight: bold;
-    text-align: center;
-}
-
-.flying-card.flipping {
-    animation: cardFlip 0.8s ease-in-out forwards;
-}
-
-@keyframes cardFlip {
-    0% {
-        transform: scale(1) rotateY(0deg);
-    }
-    50% {
-        transform: scale(1.1) rotateY(90deg);
-    }
-    100% {
-        transform: scale(1) rotateY(180deg);
-    }
-}
-
-.flying-card.revealed {
-    background: white;
-    border: 2px solid #ddd;
-}
-
-.flying-card.revealed::before {
-    content: none;
-}
-
-.flying-card.revealed .card-content {
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
     align-items: center;
-    height: 100%;
-    width: 100%;
-    padding: 6px;
+    line-height: 1;
+}
+
+.card .corner.top-left {
+    top: 8px;
+    left: 8px;
+}
+
+.card .corner.bottom-right {
+    bottom: 8px;
+    right: 8px;
+    transform: rotate(180deg);
+}
+
+.card .corner .rank {
     font-size: 1rem;
-    font-weight: bold;
+    font-weight: 900;
+    line-height: 1;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
-.flying-card.revealed.red .card-content {
-    color: #d32f2f;
+.card .corner .suit {
+    font-size: 1.2rem;
+    line-height: 1;
+    margin-top: 1px;
 }
 
-.flying-card.revealed.black .card-content {
-    color: #1a1a1a;
-}
-
-.game-controls {
+/* Center suit */
+.card .center-suit {
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    text-align: center;
-    padding: 10px;
-    background: rgba(0, 0, 0, 0.9);
-    border-radius: 8px;
-    backdrop-filter: blur(10px);
-    z-index: 100;
-    min-width: 200px;
-    border: 2px solid #ffd700;
-    box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+    font-size: 2.5rem;
+    line-height: 1;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
-.selected-card-info {
-    margin-bottom: 12px;
-    font-size: 0.9rem;
-    color: white;
-    font-weight: bold;
+.card.red {
+    color: #c62828;
+    text-shadow: 0 1px 2px rgba(198, 40, 40, 0.2);
 }
 
-.buttons {
-    display: flex;
-    justify-content: center;
-    gap: 12px;
-    margin-bottom: 8px;
+.card.black {
+    color: #1a1a1a;
+    text-shadow: 0 1px 2px rgba(26, 26, 26, 0.2);
 }
 
-.guess-btn {
-    padding: 10px 16px;
-    font-size: 1rem;
-    font-weight: bold;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    min-width: 80px;
-    flex: 1;
-    max-width: 100px;
-}
 
-#higher-btn {
-    background: #4caf50;
-    color: white;
-}
 
-#higher-btn:hover {
-    background: #45a049;
-    transform: translateY(-2px);
-}
 
-#lower-btn {
-    background: #f44336;
-    color: white;
-}
 
-#lower-btn:hover {
-    background: #da190b;
-    transform: translateY(-2px);
-}
 
-.cancel-btn {
-    padding: 6px 12px;
-    background: #666;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: background 0.3s ease;
-    font-size: 0.8rem;
-}
-
-.cancel-btn:hover {
-    background: #555;
-}
 
 
 
@@ -448,37 +394,35 @@ h1 {
     
     .face-up-cards {
         gap: 6px;
-        margin-bottom: 12px;
-    }
-    
-    .remaining-deck-area {
-        margin: 10px 0 15px;
-    }
-    
-    .remaining-deck {
-        width: 70px;
-        height: 95px;
-    }
-    
-    .deck-card {
-        width: 70px;
-        height: 95px;
-    }
-    
-    .deck-info {
-        font-size: 0.8rem;
-        padding: 4px 10px;
-    }
-    
-    .flying-card {
-        width: 70px;
-        height: 95px;
+        margin-bottom: 15px;
     }
     
     .card {
         font-size: 1rem;
-        padding: 4px;
-        border-radius: 6px;
+        padding: 6px;
+        border-radius: 10px;
+    }
+    
+    .card .corner.top-left {
+        top: 6px;
+        left: 6px;
+    }
+    
+    .card .corner.bottom-right {
+        bottom: 6px;
+        right: 6px;
+    }
+    
+    .card .corner .rank {
+        font-size: 0.9rem;
+    }
+    
+    .card .corner .suit {
+        font-size: 1.1rem;
+    }
+    
+    .card .center-suit {
+        font-size: 2.2rem;
     }
     
     .card .suit {
@@ -489,25 +433,13 @@ h1 {
         font-size: 0.7rem;
     }
     
-    .game-controls {
-        padding: 8px;
-        min-width: 160px;
+    .floating-guess-buttons button {
+        width: 60px;
+        height: 35px;
+        font-size: 0.8rem;
     }
     
-    .selected-card-info {
-        font-size: 0.9rem;
-        margin-bottom: 12px;
-    }
-    
-    .buttons {
-        gap: 10px;
-    }
-    
-    .guess-btn {
-        padding: 10px 15px;
-        font-size: 1rem;
-        min-width: 80px;
-    }
+
     
 
 }
@@ -531,50 +463,35 @@ h1 {
     .face-up-cards {
         gap: 4px;
         padding: 0 2px;
-        margin-bottom: 10px;
-    }
-    
-    .remaining-deck-area {
-        margin: 8px 0 12px;
-    }
-    
-    .remaining-deck {
-        width: 60px;
-        height: 80px;
-    }
-    
-    .deck-card {
-        width: 60px;
-        height: 80px;
-    }
-    
-    .deck-card::before {
-        font-size: 1rem;
-    }
-    
-    .deck-info {
-        font-size: 0.7rem;
-        padding: 3px 8px;
-    }
-    
-    .flying-card {
-        width: 60px;
-        height: 80px;
-    }
-    
-    .flying-card::before {
-        font-size: 1rem;
-    }
-    
-    .flying-card.revealed .card-content {
-        font-size: 0.9rem;
-        padding: 4px;
     }
     
     .card {
         font-size: 0.9rem;
-        padding: 3px;
+        padding: 5px;
         max-width: 90px;
+        border-radius: 8px;
+    }
+    
+    .card .corner.top-left {
+        top: 5px;
+        left: 5px;
+    }
+    
+    .card .corner.bottom-right {
+        bottom: 5px;
+        right: 5px;
+    }
+    
+    .card .corner .rank {
+        font-size: 0.8rem;
+    }
+    
+    .card .corner .suit {
+        font-size: 1rem;
+    }
+    
+    .card .center-suit {
+        font-size: 2rem;
     }
     
     .card .suit {
@@ -585,10 +502,10 @@ h1 {
         font-size: 0.6rem;
     }
     
-    .guess-btn {
-        padding: 8px 12px;
-        font-size: 0.9rem;
-        min-width: 70px;
+    .floating-guess-buttons button {
+        width: 55px;
+        height: 32px;
+        font-size: 0.75rem;
     }
     
     .cancel-btn {
@@ -596,14 +513,7 @@ h1 {
         font-size: 0.8rem;
     }
     
-    .game-controls {
-        padding: 6px;
-        min-width: 140px;
-    }
-    
-    .selected-card-info {
-        font-size: 0.8rem;
-    }
+
     
 
 }
@@ -616,6 +526,30 @@ h1 {
     .card {
         font-size: 0.8rem;
         max-width: 80px;
+        padding: 4px;
+        border-radius: 6px;
+    }
+    
+    .card .corner.top-left {
+        top: 4px;
+        left: 4px;
+    }
+    
+    .card .corner.bottom-right {
+        bottom: 4px;
+        right: 4px;
+    }
+    
+    .card .corner .rank {
+        font-size: 0.7rem;
+    }
+    
+    .card .corner .suit {
+        font-size: 0.9rem;
+    }
+    
+    .card .center-suit {
+        font-size: 1.8rem;
     }
     
     .card .suit {
@@ -626,8 +560,9 @@ h1 {
         font-size: 0.5rem;
     }
     
-    .guess-btn {
-        font-size: 0.8rem;
-        padding: 6px 10px;
+    .floating-guess-buttons button {
+        width: 50px;
+        height: 30px;
+        font-size: 0.7rem;
     }
 }

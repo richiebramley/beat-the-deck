@@ -87,14 +87,12 @@ class Game {
         }
         
         this.renderFaceUpCards();
-        this.renderRemainingDeck();
         this.updateGameInfo();
     }
 
     bindEvents() {
         document.getElementById('higher-btn').addEventListener('click', () => this.makeGuess('higher'));
         document.getElementById('lower-btn').addEventListener('click', () => this.makeGuess('lower'));
-        document.getElementById('cancel-btn').addEventListener('click', () => this.cancelSelection());
         document.getElementById('new-game-btn').addEventListener('click', () => this.startNewGame());
     }
 
@@ -116,40 +114,19 @@ class Game {
         });
     }
 
-    renderRemainingDeck() {
-        const remainingDeckContainer = document.getElementById('remaining-deck');
-        const deckCountElement = document.getElementById('deck-count');
-        
-        // Clear existing deck cards
-        remainingDeckContainer.innerHTML = '';
-        
-        const remainingCards = this.deck.remainingCards();
-        deckCountElement.textContent = remainingCards;
-        
-        if (remainingCards === 0) {
-            return; // No cards left to show
-        }
-        
-        // Create a visual stack effect by showing multiple cards with slight offsets
-        const maxCardsToShow = Math.min(5, Math.ceil(remainingCards / 10)); // Show up to 5 card layers
-        
-        for (let i = 0; i < maxCardsToShow; i++) {
-            const deckCard = document.createElement('div');
-            deckCard.className = 'deck-card';
-            deckCard.style.top = `${-i * 2}px`;
-            deckCard.style.left = `${-i * 1}px`;
-            deckCard.style.zIndex = maxCardsToShow - i;
-            remainingDeckContainer.appendChild(deckCard);
-        }
-    }
-
     createCardElement(card, stackIndex) {
         const cardDiv = document.createElement('div');
         cardDiv.className = `card ${card.getColor()}`;
         cardDiv.dataset.stackIndex = stackIndex;
         
         if (this.selectedStackIndex === stackIndex) {
-            cardDiv.classList.add('selected');
+            // If this is a correct guess, show green outline instead of blue
+            if (this.lastGuessResult === true && this.gameState === 'showing-result') {
+                cardDiv.classList.add('correct-guess');
+            } else {
+                // Only add selected class if not showing correct result
+                cardDiv.classList.add('selected');
+            }
         }
 
         // Check if this is the newly drawn card
@@ -166,10 +143,39 @@ class Game {
         }
 
         cardDiv.innerHTML = `
-            <div class="rank">${card.getDisplayRank()}</div>
-            <div class="suit">${card.getSuitSymbol()}</div>
-            <div class="rank">${card.getDisplayRank()}</div>
+            <div class="corner top-left">
+                <div class="rank">${card.getDisplayRank()}</div>
+                <div class="suit">${card.getSuitSymbol()}</div>
+            </div>
+            <div class="center-suit">${card.getSuitSymbol()}</div>
+            <div class="corner bottom-right">
+                <div class="rank">${card.getDisplayRank()}</div>
+                <div class="suit">${card.getSuitSymbol()}</div>
+            </div>
         `;
+
+        // Add floating action buttons after setting innerHTML
+        if (this.selectedStackIndex === stackIndex) {
+            const floatingButtons = document.createElement('div');
+            floatingButtons.className = 'floating-guess-buttons';
+            floatingButtons.innerHTML = `
+                <button id="higher-btn" class="guess-btn">Higher</button>
+                <button id="lower-btn" class="guess-btn">Lower</button>
+            `;
+            
+            // Add event listeners to the floating buttons
+            floatingButtons.querySelector('#higher-btn').addEventListener('click', (e) => {
+                e.stopPropagation(); // Prevent card selection when clicking button
+                this.makeGuess('higher');
+            });
+            
+            floatingButtons.querySelector('#lower-btn').addEventListener('click', (e) => {
+                e.stopPropagation(); // Prevent card selection when clicking button
+                this.makeGuess('lower');
+            });
+            
+            cardDiv.appendChild(floatingButtons);
+        }
 
         cardDiv.addEventListener('click', () => this.selectCard(stackIndex));
         
@@ -189,10 +195,24 @@ class Game {
     }
 
     selectCard(stackIndex) {
-        if (this.gameState !== 'selecting') return;
+        if (this.gameState !== 'selecting' && this.gameState !== 'guessing') return;
         if (this.faceUpStacks[stackIndex] === 'burned') return; // Burned stack
         if (this.faceUpStacks[stackIndex].length === 0) return; // Empty stack
 
+        // If already selecting a different stack, allow changing selection
+        if (this.gameState === 'guessing' && this.selectedStackIndex !== stackIndex) {
+            this.selectedStackIndex = stackIndex;
+            this.renderFaceUpCards();
+            this.showGameControls();
+            return;
+        }
+
+        // If selecting the same stack while already guessing, do nothing
+        if (this.gameState === 'guessing' && this.selectedStackIndex === stackIndex) {
+            return;
+        }
+
+        // Initial selection
         this.selectedStackIndex = stackIndex;
         this.gameState = 'guessing';
         
@@ -201,50 +221,23 @@ class Game {
     }
 
     showGameControls() {
-        const selectedCard = this.faceUpStacks[this.selectedStackIndex][this.faceUpStacks[this.selectedStackIndex].length - 1];
-        document.getElementById('selected-card').textContent = `${selectedCard.getDisplayRank()}${selectedCard.getSuitSymbol()}`;
-        
-        const gameControls = document.getElementById('game-controls');
-        gameControls.style.display = 'block';
-        
-        // Position the controls over the selected card
-        this.positionControlsOverCard();
-        
-        document.getElementById('game-status').style.display = 'none';
-    }
-
-    positionControlsOverCard() {
-        const gameControls = document.getElementById('game-controls');
-        const faceUpContainer = document.getElementById('face-up-cards');
-        
-        // Calculate position based on grid layout (3x3)
-        const row = Math.floor(this.selectedStackIndex / 3);
-        const col = this.selectedStackIndex % 3;
-        
-        // Get container dimensions
-        const containerRect = faceUpContainer.getBoundingClientRect();
-        const containerStyle = window.getComputedStyle(faceUpContainer);
-        const gap = parseInt(containerStyle.gap) || 8;
-        
-        // Calculate card size and position
-        const cardWidth = (containerRect.width - (2 * gap)) / 3;
-        const cardHeight = cardWidth * (4/3); // aspect-ratio 3/4
-        
-        const cardLeft = col * (cardWidth + gap);
-        const cardTop = row * (cardHeight + gap);
-        
-        // Position controls in center of selected card
-        const centerX = cardLeft + (cardWidth / 2);
-        const centerY = cardTop + (cardHeight / 2);
-        
-        gameControls.style.left = `${centerX}px`;
-        gameControls.style.top = `${centerY}px`;
-        gameControls.style.transform = 'translate(-50%, -50%)';
+        // Re-render cards to show floating buttons
+        this.renderFaceUpCards();
     }
 
     hideGameControls() {
-        document.getElementById('game-controls').style.display = 'none';
-        document.getElementById('game-status').style.display = 'block';
+        // No need to show/hide game status anymore
+    }
+
+    hideFloatingButtons() {
+        // Remove floating buttons from the selected card
+        const selectedCard = document.querySelector(`[data-stack-index="${this.selectedStackIndex}"]`);
+        if (selectedCard) {
+            const floatingButtons = selectedCard.querySelector('.floating-guess-buttons');
+            if (floatingButtons) {
+                floatingButtons.remove();
+            }
+        }
     }
 
     makeGuess(guess) {
@@ -266,15 +259,19 @@ class Game {
         this.gameState = 'showing-result';
         this.hideGameControls();
         
-        // Start the card animation from deck to selected stack
-        this.animateCardToStack(isCorrect);
+        // Hide the floating buttons immediately after guess
+        this.hideFloatingButtons();
+        
+        // Add the card to the stack immediately for visual feedback
+        this.faceUpStacks[this.selectedStackIndex].push(this.lastDrawnCard);
+        this.renderFaceUpCards();
         
         if (isCorrect) {
-            // Card stays on the stack, continue after animation completes
-            setTimeout(() => this.continueAfterCorrectGuess(), 1800);
+            // Card stays on the stack, continue after a brief pause
+            setTimeout(() => this.continueAfterCorrectGuess(), 1000);
         } else {
             // Show the card for 2 seconds, then burn the stack
-            setTimeout(() => this.burnStack(), 2800);
+            setTimeout(() => this.burnStack(), 2000);
         }
     }
 
@@ -288,77 +285,6 @@ class Game {
         } else {
             return drawnCard.value < currentCard.value;
         }
-    }
-
-    animateCardToStack(isCorrect) {
-        // Get the positions of the deck and target stack
-        const deckElement = document.getElementById('remaining-deck');
-        const faceUpContainer = document.getElementById('face-up-cards');
-        
-        if (!deckElement || !faceUpContainer) return;
-        
-        const deckRect = deckElement.getBoundingClientRect();
-        const containerRect = faceUpContainer.getBoundingClientRect();
-        
-        // Calculate target position based on selected stack
-        const row = Math.floor(this.selectedStackIndex / 3);
-        const col = this.selectedStackIndex % 3;
-        const containerStyle = window.getComputedStyle(faceUpContainer);
-        const gap = parseInt(containerStyle.gap) || 8;
-        const cardWidth = (containerRect.width - (2 * gap)) / 3;
-        const cardHeight = cardWidth * (4/3);
-        
-        const targetX = containerRect.left + col * (cardWidth + gap) + (cardWidth / 2);
-        const targetY = containerRect.top + row * (cardHeight + gap) + (cardHeight / 2);
-        
-        // Create flying card element
-        const flyingCard = document.createElement('div');
-        flyingCard.className = 'flying-card';
-        
-        // Responsive card size calculation
-        const cardSize = window.innerWidth <= 480 ? {width: 60, height: 80} : 
-                        window.innerWidth <= 768 ? {width: 70, height: 95} : 
-                        {width: 80, height: 110};
-        
-        flyingCard.style.left = `${deckRect.left + deckRect.width/2 - cardSize.width/2}px`;
-        flyingCard.style.top = `${deckRect.top + deckRect.height/2 - cardSize.height/2}px`;
-        
-        document.body.appendChild(flyingCard);
-        
-        // Update remaining deck immediately
-        this.renderRemainingDeck();
-        
-        // Animate to target position
-        setTimeout(() => {
-            flyingCard.style.transition = 'all 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
-            flyingCard.style.left = `${targetX - cardSize.width/2}px`;
-            flyingCard.style.top = `${targetY - cardSize.height/2}px`;
-            
-            // Start flip animation
-            flyingCard.classList.add('flipping');
-        }, 50);
-        
-        // Reveal the card halfway through animation
-        setTimeout(() => {
-            flyingCard.classList.add('revealed', this.lastDrawnCard.getColor());
-            flyingCard.innerHTML = `
-                <div class="card-content">
-                    <div class="rank">${this.lastDrawnCard.getDisplayRank()}</div>
-                    <div class="suit">${this.lastDrawnCard.getSuitSymbol()}</div>
-                    <div class="rank">${this.lastDrawnCard.getDisplayRank()}</div>
-                </div>
-            `;
-        }, 450);
-        
-        // Complete animation and update game state
-        setTimeout(() => {
-            // Add the card to the stack and render
-            this.faceUpStacks[this.selectedStackIndex].push(this.lastDrawnCard);
-            this.renderFaceUpCards();
-            
-            // Remove flying card
-            flyingCard.remove();
-        }, 900);
     }
 
     continueAfterCorrectGuess() {
@@ -397,20 +323,12 @@ class Game {
 
 
 
-    cancelSelection() {
-        this.selectedStackIndex = null;
-        this.gameState = 'selecting';
-        this.hideGameControls();
-        this.renderFaceUpCards();
-    }
+
 
     updateGameInfo() {
-        const remainingCards = this.deck.remainingCards();
-        document.getElementById('cards-remaining').textContent = remainingCards;
-        document.getElementById('deck-count').textContent = remainingCards;
+        document.getElementById('cards-remaining').textContent = this.deck.remainingCards();
         const activeStacks = this.faceUpStacks.filter(stack => stack !== 'burned' && stack.length > 0).length;
         document.getElementById('active-decks').textContent = activeStacks;
-        this.renderRemainingDeck();
     }
 
 
