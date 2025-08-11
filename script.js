@@ -91,9 +91,20 @@ class Game {
     }
 
     bindEvents() {
-        document.getElementById('higher-btn').addEventListener('click', () => this.makeGuess('higher'));
-        document.getElementById('lower-btn').addEventListener('click', () => this.makeGuess('lower'));
-        document.getElementById('new-game-btn').addEventListener('click', () => this.startNewGame());
+        // Use event delegation for all game buttons since they're created dynamically
+        document.addEventListener('click', (e) => {
+            if (e.target && e.target.id === 'higher-btn') {
+                console.log('Higher button clicked'); // Debug log
+                this.makeGuess('higher');
+            } else if (e.target && e.target.id === 'lower-btn') {
+                console.log('Lower button clicked'); // Debug log
+                this.makeGuess('lower');
+            } else if (e.target && e.target.id === 'new-game-btn') {
+                console.log('New Game button clicked'); // Debug log
+                this.startNewGame();
+            }
+        });
+        console.log('All game button event delegation set up'); // Debug log
     }
 
     renderFaceUpCards() {
@@ -339,20 +350,24 @@ class Game {
         const titleElement = document.getElementById('game-over-title');
         const messageElement = document.getElementById('game-over-message');
         
+        const remainingCards = this.deck.remainingCards();
+        
         if (won) {
             titleElement.textContent = 'Congratulations!';
             titleElement.style.color = '#4caf50';
-            messageElement.textContent = 'You beat the deck! All cards have been used.';
+            messageElement.textContent = `You beat the deck! All cards have been used.`;
         } else {
             titleElement.textContent = 'Game Over';
             titleElement.style.color = '#f44336';
-            messageElement.textContent = 'All face-up decks have been burned. Better luck next time!';
+            messageElement.textContent = `All face-up decks have been burned. ${remainingCards} cards were still remaining. Better luck next time!`;
         }
         
         gameOverDiv.style.display = 'flex';
     }
 
     startNewGame() {
+        console.log('startNewGame called'); // Debug log
+        
         // Reset everything
         this.deck = new Deck();
         this.faceUpStacks = [];
@@ -362,12 +377,29 @@ class Game {
         this.lastGuess = null;
         this.lastGuessResult = null;
         
+        console.log('Game state reset, deck cards:', this.deck.remainingCards()); // Debug log
+        
         // Hide game over screen
-        document.getElementById('game-over').style.display = 'none';
-        this.hideGameControls();
+        const gameOverDiv = document.getElementById('game-over');
+        if (gameOverDiv) {
+            gameOverDiv.style.display = 'none';
+            console.log('Game over screen hidden'); // Debug log
+        } else {
+            console.error('Game over div not found'); // Debug log
+        }
+        
+        // Clear any existing floating buttons
+        const existingButtons = document.querySelectorAll('.floating-guess-buttons');
+        existingButtons.forEach(button => button.remove());
+        console.log('Cleared', existingButtons.length, 'floating buttons'); // Debug log
         
         // Initialize new game
         this.initializeGame();
+        console.log('Game initialized, face-up stacks:', this.faceUpStacks.length); // Debug log
+        
+        // Ensure game state is properly set
+        this.updateGameInfo();
+        console.log('Game info updated'); // Debug log
     }
 }
 
