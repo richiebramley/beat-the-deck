@@ -105,6 +105,35 @@ class Game {
             }
         });
         console.log('All game button event delegation set up'); // Debug log
+        
+        // Bind hamburger menu events
+        this.bindMenuEvents();
+    }
+
+    bindMenuEvents() {
+        const hamburgerMenu = document.getElementById('hamburger-menu');
+        const menuOverlay = document.getElementById('menu-overlay');
+        const closeMenu = document.getElementById('close-menu');
+
+        // Open menu
+        hamburgerMenu.addEventListener('click', () => {
+            menuOverlay.classList.add('active');
+            hamburgerMenu.setAttribute('aria-expanded', 'true');
+        });
+
+        // Close menu
+        closeMenu.addEventListener('click', () => {
+            menuOverlay.classList.remove('active');
+            hamburgerMenu.setAttribute('aria-expanded', 'false');
+        });
+
+        // Close menu when clicking outside
+        menuOverlay.addEventListener('click', (e) => {
+            if (e.target === menuOverlay) {
+                menuOverlay.classList.remove('active');
+                hamburgerMenu.setAttribute('aria-expanded', 'false');
+            }
+        });
     }
 
     renderFaceUpCards() {

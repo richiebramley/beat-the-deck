@@ -3,41 +3,144 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Beat the Deck - Card Game</title>
+    
+    <!-- Primary Meta Tags -->
+    <title>Beat the Deck - Free Online Card Game | Higher or Lower Challenge</title>
+    <meta name="title" content="Beat the Deck - Free Online Card Game | Higher or Lower Challenge">
+    <meta name="description" content="Play Beat the Deck, a free online card game where you guess higher or lower to place cards on 9 face-up stacks. Challenge yourself to use all 52 cards and win!">
+    <meta name="keywords" content="card game, online game, higher or lower, free game, beat the deck, card challenge, strategy game, browser game">
+    <meta name="author" content="Beat the Deck">
+    <meta name="robots" content="index, follow">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://beatthedeck.app/">
+    <meta property="og:title" content="Beat the Deck - Free Online Card Game">
+    <meta property="og:description" content="Challenge yourself with this addictive higher or lower card game. Place 9 cards face-up and guess correctly to win!">
+    <meta property="og:image" content="https://beatthedeck.app/images/og-image.jpg">
+    <meta property="og:site_name" content="Beat the Deck">
+    
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://beatthedeck.app/">
+    <meta property="twitter:title" content="Beat the Deck - Free Online Card Game">
+    <meta property="twitter:description" content="Challenge yourself with this addictive higher or lower card game. Place 9 cards face-up and guess correctly to win!">
+    <meta property="twitter:image" content="https://beatthedeck.app/images/twitter-image.jpg">
+    
+    <!-- Additional SEO Meta Tags -->
+    <meta name="language" content="English">
+    <meta name="revisit-after" content="7 days">
+    <meta name="distribution" content="global">
+    <meta name="rating" content="general">
+    <meta name="theme-color" content="#4caf50">
+    
+    <!-- Canonical URL -->
+    <link rel="canonical" href="https://beatthedeck.app/">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    
+    <!-- Preload Critical Resources -->
+    <link rel="preload" href="style.css" as="style">
+    <link rel="preload" href="script.js" as="script">
+    
+    <!-- Stylesheet -->
     <link rel="stylesheet" href="style.css">
+    
+    <!-- Structured Data for Rich Snippets -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "Beat the Deck",
+        "description": "A free online card game where players guess higher or lower to place cards on face-up stacks",
+        "url": "https://beatthedeck.app",
+        "applicationCategory": "Game",
+        "operatingSystem": "Any",
+        "browserRequirements": "Requires JavaScript. Requires HTML5.",
+        "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "USD"
+        },
+        "author": {
+            "@type": "Person",
+            "name": "Beat the Deck Team"
+        },
+        "game": {
+            "@type": "Game",
+            "name": "Beat the Deck",
+            "description": "Higher or lower card guessing game",
+            "genre": "Card Game, Strategy, Puzzle"
+        }
+    }
+    </script>
 </head>
 <body>
     <div class="game-container">
-        <header>
-            <h1>Beat the Deck</h1>
-            <div class="game-info">
-                <div class="cards-remaining">Cards Left: <span id="cards-remaining">43</span></div>
-                <div class="active-decks">Active Decks: <span id="active-decks">9</span></div>
+        <header role="banner">
+            <div class="header-content">
+                <div class="header-left">
+                    <!-- Left section - 40px width -->
+                </div>
+                <div class="header-middle">
+                    <h1>Beat the Deck</h1>
+                </div>
+                <div class="header-right">
+                    <button class="hamburger-menu" id="hamburger-menu" aria-label="Open menu" aria-expanded="false">
+                        <span class="hamburger-line"></span>
+                        <span class="hamburger-line"></span>
+                        <span class="hamburger-line"></span>
+                    </button>
+                </div>
+            </div>
+            <div class="game-info" role="status" aria-live="polite">
+                <div class="cards-remaining">Cards Left: <span id="cards-remaining" aria-label="cards remaining">43</span></div>
+                <div class="active-decks">Active Decks: <span id="active-decks" aria-label="active decks">9</span></div>
             </div>
         </header>
 
-        <main>
-            <div class="face-up-cards" id="face-up-cards">
-                <!-- 9 face-up cards will be placed here -->
-            </div>
-
-
-
-
-
-
-
-
+        <main role="main">
+            <section class="game-area" aria-label="Game Board">
+                <h2 class="sr-only">Game Board</h2>
+                <div class="face-up-cards" id="face-up-cards" role="grid" aria-label="Face-up card stacks">
+                    <!-- 9 face-up cards will be placed here -->
+                </div>
+            </section>
         </main>
 
-        <div class="game-over" id="game-over" style="display: none;">
+        <div class="game-over" id="game-over" style="display: none;" role="dialog" aria-labelledby="game-over-title" aria-describedby="game-over-message">
             <div class="game-over-content">
                 <h2 id="game-over-title"></h2>
                 <p id="game-over-message"></p>
-                <button id="new-game-btn">New Game</button>
+                <button id="new-game-btn" aria-label="Start a new game">New Game</button>
             </div>
         </div>
     </div>
+
+    <!-- Hamburger Menu Overlay -->
+    <div class="menu-overlay" id="menu-overlay">
+        <div class="menu-content">
+            <div class="menu-header">
+                <h2>About Beat the Deck</h2>
+                <button class="close-menu" id="close-menu" aria-label="Close menu">×</button>
+            </div>
+            
+            <div class="menu-content-single">
+                <p>Beat the Deck is a free online card game that challenges your strategic thinking and luck. Based on the classic "Higher or Lower" concept, this game adds a unique twist with multiple stacks and strategic decision-making.</p>
+                
+                <p>Use all remaining cards in the deck by correctly guessing whether the next card will be higher or lower than the current card on your chosen stack.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer with additional SEO content -->
+    <footer role="contentinfo">
+        <div class="footer-content">
+            <p>&copy; 2024 Beat the Deck. A free online card game.</p>
+        </div>
+    </footer>
 
     <script src="script.js"></script>
 </body>

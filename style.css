@@ -16,6 +16,7 @@ body {
     max-width: 1200px;
     margin: 0 auto;
     padding: 10px;
+    padding-bottom: 100px; /* Add bottom padding to prevent footer overlap */
 }
 
 header {
@@ -402,6 +403,231 @@ h1 {
     color: #1a1a1a;
 }
 
+/* Header layout */
+.header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.header-left {
+    width: 40px;
+    flex-shrink: 0;
+}
+
+.header-middle {
+    flex: 1;
+    text-align: center;
+}
+
+.header-right {
+    width: 40px;
+    flex-shrink: 0;
+}
+
+/* Game subtitle */
+.game-subtitle {
+    text-align: left;
+    color: #666;
+    margin: 0 0 15px 0;
+    font-size: 1.1rem;
+    font-weight: 300;
+}
+
+/* Game instructions */
+.game-instructions {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 20px;
+    margin: 20px 0;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.game-instructions h2 {
+    color: #fff;
+    margin-bottom: 15px;
+    font-size: 1.3rem;
+}
+
+.game-instructions ol {
+    color: #e0e0e0;
+    line-height: 1.6;
+    margin: 0;
+    padding-left: 20px;
+}
+
+.game-instructions li {
+    margin-bottom: 8px;
+}
+
+/* Screen reader only text */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* Footer styles */
+footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    padding: 20px;
+    text-align: center;
+    color: #888;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    z-index: 100;
+}
+
+.footer-content {
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.footer-content p {
+    margin-bottom: 15px;
+}
+
+.footer-content nav ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+}
+
+.footer-content nav a {
+    color: #888;
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.footer-content nav a:hover {
+    color: #4caf50;
+}
+
+/* Hamburger Menu Styles */
+.hamburger-menu {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    border-radius: 4px;
+    transition: background-color 0.3s ease;
+}
+
+.hamburger-menu:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.hamburger-line {
+    width: 24px;
+    height: 3px;
+    background-color: #fff;
+    border-radius: 2px;
+    transition: all 0.3s ease;
+}
+
+/* Menu Overlay */
+.menu-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.9);
+    z-index: 2000;
+    display: none;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.menu-overlay.active {
+    display: flex;
+    opacity: 1;
+}
+
+.menu-content {
+    background: #1a1a1a;
+    width: 90%;
+    max-width: 500px;
+    height: 90%;
+    max-height: 600px;
+    margin: auto;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+.menu-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    border-bottom: 1px solid #333;
+    background: #2a2a2a;
+}
+
+.menu-header h2 {
+    color: #fff;
+    margin: 0;
+    font-size: 1.5rem;
+}
+
+.close-menu {
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 2rem;
+    cursor: pointer;
+    padding: 0;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: background-color 0.3s ease;
+}
+
+.close-menu:hover {
+    background-color: #333;
+}
+
+
+
+/* Single Menu Content */
+.menu-content-single {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+    color: #e0e0e0;
+    line-height: 1.6;
+}
+
+.menu-content-single p {
+    margin-bottom: 20px;
+    font-size: 1.1rem;
+}
+
+.menu-content-single p:last-child {
+    margin-bottom: 0;
+}
+
 .game-over {
     position: fixed;
     top: 0;
@@ -514,6 +740,13 @@ h1 {
         width: 60px;
         height: 35px;
         font-size: 0.8rem;
+    }
+
+    /* Mobile menu adjustments */
+    .menu-content {
+        width: 95%;
+        height: 95%;
+        max-height: none;
     }
     
 
