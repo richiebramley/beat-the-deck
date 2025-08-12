@@ -36,6 +36,74 @@ h1 {
     gap: 30px;
     font-size: 1rem;
     font-weight: bold;
+    align-items: center;
+}
+
+/* Card rules tooltip */
+.card-rules-tooltip {
+    position: relative;
+    display: inline-block;
+}
+
+.tooltip-trigger {
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 900;
+    padding: 2px 4px;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    transition: all 0.2s ease;
+    user-select: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 16px;
+    min-height: 16px;
+}
+
+.tooltip-trigger:hover,
+.tooltip-trigger:focus {
+    background-color: rgba(255, 255, 255, 0.25);
+    border-color: rgba(255, 255, 255, 0.5);
+    transform: scale(1.05);
+    outline: none;
+}
+
+.tooltip-content {
+    visibility: hidden;
+    opacity: 0;
+    position: absolute;
+    bottom: 125%;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: rgba(0, 0, 0, 0.9);
+    color: white;
+    text-align: center;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    white-space: nowrap;
+    z-index: 1000;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+    pointer-events: none;
+}
+
+.tooltip-content::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-left: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: rgba(0, 0, 0, 0.9) transparent transparent transparent;
+}
+
+.card-rules-tooltip:hover .tooltip-content,
+.card-rules-tooltip:focus-within .tooltip-content {
+    visibility: visible;
+    opacity: 1;
 }
 
 .face-up-cards {
@@ -822,10 +890,6 @@ footer {
         padding: 6px 12px;
         font-size: 0.8rem;
     }
-    
-
-    
-
 }
 
 @media (max-width: 360px) {
