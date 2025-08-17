@@ -1,3 +1,43 @@
+// Analytics Service - Centralized tracking for all game events
+class AnalyticsService {
+    static track(eventName, params) {
+        if (typeof gtag !== 'undefined') {
+            gtag('event', eventName, params);
+        }
+    }
+    
+    static trackPowerUpUsed(powerUpName, additionalParams = {}) {
+        this.track('power_up_used', {
+            event_category: 'gameplay',
+            event_label: powerUpName,
+            value: 1,
+            ...additionalParams
+        });
+    }
+    
+    static trackGameInteraction(action) {
+        this.track('game_interaction', {
+            event_category: 'gameplay',
+            event_label: action
+        });
+    }
+    
+    static trackGameStart() {
+        this.track('game_start', {
+            event_category: 'gameplay',
+            event_label: 'new_game'
+        });
+    }
+    
+    static trackGameEnd(won, remainingCards) {
+        this.track('game_end', {
+            event_category: 'gameplay',
+            event_label: won ? 'win' : 'lose',
+            value: remainingCards || 0
+        });
+    }
+}
+
 class Card {
     constructor(suit, rank) {
         this.suit = suit;
@@ -78,6 +118,24 @@ class Deck {
 }
 
 class Game {
+    /*
+     * Google Analytics 4 Event Tracking
+     * 
+     * Power-up Events:
+     * - power_up_used: Tracks when power-ups are used (check_stacks, sneak_peak)
+     * - power_ups_available: Tracks when power-ups become available after first card
+     * - power_ups_reset: Tracks when power-ups are reset for new games
+     * - power_up_detail: Tracks specific details about power-up usage (card types revealed)
+     * - power_up_timing: Tracks when in the game power-ups are used (cards remaining)
+     * - power_up_effectiveness: Tracks if guesses are correct after using power-ups
+     * 
+     * Game Events:
+     * - game_interaction: Tracks higher/lower button clicks
+     * - game_start: Tracks new game starts
+     * - game_end: Tracks game completion (win/lose)
+     * - celebration_triggered: Tracks win celebrations
+     * - all_stacks_burned: Tracks epic fire animations
+     */
     constructor() {
         this.deck = new Deck();
         this.faceUpStacks = [];
@@ -91,6 +149,23 @@ class Game {
         this.firstCardPlaced = false; // Track if first card has been successfully placed
         this.jokersDrawn = 0; // Track total jokers that have been drawn from deck
         this.stackToBurn = null; // Track which stack should be burned for incorrect guesses
+        
+        // Cache frequently accessed DOM elements
+        this.elements = {
+            cardsRemaining: document.getElementById('cards-remaining'),
+            activeDecks: document.getElementById('active-decks'),
+            jokerInfo: document.getElementById('joker-info'),
+            sneakPeakBtn: document.getElementById('sneak-peak-btn'),
+            peekNextBtn: document.getElementById('peek-next-btn'),
+            faceUpCards: document.getElementById('face-up-cards'),
+            gameOver: document.getElementById('game-over'),
+            gameOverTitle: document.getElementById('game-over-title'),
+            gameOverMessage: document.getElementById('game-over-message'),
+            newGameBtn: document.getElementById('new-game-btn'),
+            menuOverlay: document.getElementById('menu-overlay'),
+            hamburgerMenu: document.getElementById('hamburger-menu'),
+            closeMenu: document.getElementById('close-menu')
+        };
         
         this.initializeGame();
         this.bindEvents();
@@ -109,19 +184,17 @@ class Game {
         }
         
         // Initialize Check Stacks button (disabled until first card is placed)
-        const sneakPeakBtn = document.getElementById('sneak-peak-btn');
-        if (sneakPeakBtn) {
-            sneakPeakBtn.disabled = true; // Start disabled
-            sneakPeakBtn.textContent = 'Check Stacks';
-            sneakPeakBtn.classList.remove('active');
+        if (this.elements.sneakPeakBtn) {
+            this.elements.sneakPeakBtn.disabled = true; // Start disabled
+            this.elements.sneakPeakBtn.textContent = 'Check Stacks';
+            this.elements.sneakPeakBtn.classList.remove('active');
         }
         
         // Initialize Sneak Peak button (disabled until first card is placed)
-        const peekNextBtn = document.getElementById('peek-next-btn');
-        if (peekNextBtn) {
-            peekNextBtn.disabled = true; // Start disabled
-            peekNextBtn.textContent = 'Sneak Peak';
-            peekNextBtn.classList.remove('active');
+        if (this.elements.peekNextBtn) {
+            this.elements.peekNextBtn.disabled = true; // Start disabled
+            this.elements.peekNextBtn.textContent = 'Sneak Peak';
+            this.elements.peekNextBtn.classList.remove('active');
         }
         
         this.renderFaceUpCards();
@@ -134,30 +207,15 @@ class Game {
             if (e.target && e.target.id === 'higher-btn') {
                 this.makeGuess('higher');
                 // Track game interaction
-                if (typeof gtag !== 'undefined') {
-                    gtag('event', 'game_interaction', {
-                        'event_category': 'gameplay',
-                        'event_label': 'higher_guess'
-                    });
-                }
+                AnalyticsService.trackGameInteraction('higher_guess');
             } else if (e.target && e.target.id === 'lower-btn') {
                 this.makeGuess('lower');
                 // Track game interaction
-                if (typeof gtag !== 'undefined') {
-                    gtag('event', 'game_interaction', {
-                        'event_category': 'gameplay',
-                        'event_label': 'lower_guess'
-                    });
-                }
+                AnalyticsService.trackGameInteraction('lower_guess');
             } else if (e.target && e.target.id === 'new-game-btn') {
                 this.startNewGame();
                 // Track new game
-                if (typeof gtag !== 'undefined') {
-                    gtag('event', 'game_start', {
-                        'event_category': 'gameplay',
-                        'event_label': 'new_game'
-                    });
-                }
+                AnalyticsService.trackGameStart();
             } else if (e.target && e.target.id === 'sneak-peak-btn') {
                 this.useSneakPeak();
             } else if (e.target && e.target.id === 'peek-next-btn') {
@@ -177,33 +235,29 @@ class Game {
     }
 
     bindMenuEvents() {
-        const hamburgerMenu = document.getElementById('hamburger-menu');
-        const menuOverlay = document.getElementById('menu-overlay');
-        const closeMenu = document.getElementById('close-menu');
-
         // Open menu
-        hamburgerMenu.addEventListener('click', () => {
-            menuOverlay.classList.add('active');
-            hamburgerMenu.setAttribute('aria-expanded', 'true');
+        this.elements.hamburgerMenu.addEventListener('click', () => {
+            this.elements.menuOverlay.classList.add('active');
+            this.elements.hamburgerMenu.setAttribute('aria-expanded', 'true');
         });
 
         // Close menu
-        closeMenu.addEventListener('click', () => {
-            menuOverlay.classList.remove('active');
-            hamburgerMenu.setAttribute('aria-expanded', 'false');
+        this.elements.closeMenu.addEventListener('click', () => {
+            this.elements.menuOverlay.classList.remove('active');
+            this.elements.hamburgerMenu.setAttribute('aria-expanded', 'false');
         });
 
         // Close menu when clicking outside
-        menuOverlay.addEventListener('click', (e) => {
-            if (e.target === menuOverlay) {
-                menuOverlay.classList.remove('active');
-                hamburgerMenu.setAttribute('aria-expanded', 'false');
+        this.elements.menuOverlay.addEventListener('click', (e) => {
+            if (e.target === this.elements.menuOverlay) {
+                this.elements.menuOverlay.classList.remove('active');
+                this.elements.hamburgerMenu.setAttribute('aria-expanded', 'false');
             }
         });
     }
 
     renderFaceUpCards() {
-        const container = document.getElementById('face-up-cards');
+        const container = this.elements.faceUpCards;
         container.innerHTML = '';
 
         this.faceUpStacks.forEach((stack, index) => {
@@ -403,18 +457,20 @@ class Game {
         this.temporarilyIncreaseOffset();
         
         // Disable the button (but don't change text yet - countdown will handle it)
-        const sneakPeakBtn = document.getElementById('sneak-peak-btn');
-        if (sneakPeakBtn) {
-            sneakPeakBtn.disabled = true;
+        if (this.elements.sneakPeakBtn) {
+            this.elements.sneakPeakBtn.disabled = true;
         }
         
         // Track power-up usage
-        if (typeof gtag !== 'undefined') {
-            gtag('event', 'power_up_used', {
-                'event_category': 'gameplay',
-                'event_label': 'sneak_peak'
-            });
-        }
+        AnalyticsService.trackPowerUpUsed('check_stacks');
+        
+        // Track when in the game the power-up was used
+        const remainingCards = this.deck.remainingCards();
+        AnalyticsService.track('power_up_timing', {
+            event_category: 'gameplay',
+            event_label: 'check_stacks_usage_timing',
+            value: remainingCards
+        });
     }
     
     usePeekNext() {
@@ -429,19 +485,28 @@ class Game {
         this.showNextCardInfo(nextCard);
         
         // Disable the button
-        const peekNextBtn = document.getElementById('peek-next-btn');
-        if (peekNextBtn) {
-            peekNextBtn.disabled = true;
-            peekNextBtn.textContent = 'Used';
+        if (this.elements.peekNextBtn) {
+            this.elements.peekNextBtn.disabled = true;
+            this.elements.peekNextBtn.textContent = 'Used';
         }
         
         // Track power-up usage
-        if (typeof gtag !== 'undefined') {
-            gtag('event', 'power_up_used', {
-                'event_category': 'gameplay',
-                'event_label': 'peek_next'
-            });
-        }
+        AnalyticsService.trackPowerUpUsed('sneak_peak');
+        
+        // Track the type of card revealed for strategic analysis
+        AnalyticsService.track('power_up_detail', {
+            event_category: 'gameplay',
+            event_label: 'sneak_peak_card_type',
+            value: nextCard.isJoker() ? 0 : nextCard.value
+        });
+        
+        // Track when in the game the power-up was used
+        const remainingCards = this.deck.remainingCards();
+        AnalyticsService.track('power_up_timing', {
+            event_category: 'gameplay',
+            event_label: 'sneak_peak_usage_timing',
+            value: remainingCards
+        });
     }
     
     showNextCardInfo(nextCard) {
@@ -461,6 +526,15 @@ class Game {
                 </div>
             </div>
         `;
+        
+        // Position the card directly below the Sneak Peak button
+        if (this.elements.peekNextBtn) {
+            const buttonRect = this.elements.peekNextBtn.getBoundingClientRect();
+            nextCardOverlay.style.position = 'fixed';
+            nextCardOverlay.style.top = (buttonRect.bottom + 10) + 'px'; // 10px below button
+            nextCardOverlay.style.left = (buttonRect.left + (buttonRect.width / 2) - 60) + 'px'; // Center on button (60px = half card width)
+            nextCardOverlay.style.right = 'auto'; // Override CSS right positioning
+        }
         
         // Add to the game area as an overlay
         const gameArea = document.querySelector('.game-area');
@@ -494,9 +568,8 @@ class Game {
         this.showCountdown();
         
         // Add active class to button for visual feedback
-        const sneakPeakBtn = document.getElementById('sneak-peak-btn');
-        if (sneakPeakBtn) {
-            sneakPeakBtn.classList.add('active');
+        if (this.elements.sneakPeakBtn) {
+            this.elements.sneakPeakBtn.classList.add('active');
         }
         
         // Animate to increased offset over 0.5 seconds (2x base + 50% additional = 3x total)
@@ -569,19 +642,18 @@ class Game {
     }
     
     showCountdown() {
-        const sneakPeakBtn = document.getElementById('sneak-peak-btn');
-        if (!sneakPeakBtn) return;
+        if (!this.elements.sneakPeakBtn) return;
         
         let countdown = 5;
         
         // Update button text immediately
-        sneakPeakBtn.textContent = countdown;
+        this.elements.sneakPeakBtn.textContent = countdown;
         
         // Countdown timer
         const countdownInterval = setInterval(() => {
             countdown--;
             if (countdown >= 0) {
-                sneakPeakBtn.textContent = countdown;
+                this.elements.sneakPeakBtn.textContent = countdown;
             } else {
                 clearInterval(countdownInterval);
             }
@@ -610,12 +682,10 @@ class Game {
 
     triggerCelebration() {
         // Track celebration event
-        if (typeof gtag !== 'undefined') {
-            gtag('event', 'celebration_triggered', {
-                'event_category': 'gameplay',
-                'event_label': 'win_celebration'
-            });
-        }
+        AnalyticsService.track('celebration_triggered', {
+            event_category: 'gameplay',
+            event_label: 'win_celebration'
+        });
         
         // Create 52 celebration cards that fly in different directions
         for (let i = 0; i < 52; i++) {
@@ -726,6 +796,15 @@ class Game {
         const isCorrect = this.evaluateGuess(topCard, this.lastDrawnCard, guess);
         this.lastGuessResult = isCorrect; // Store the result for animation
         
+        // Track power-up effectiveness if power-ups were used
+        if (this.sneakPeakUsed || this.peekNextUsed) {
+            AnalyticsService.track('power_up_effectiveness', {
+                event_category: 'gameplay',
+                event_label: 'guess_after_power_up',
+                value: isCorrect ? 1 : 0
+            });
+        }
+        
         this.gameState = 'showing-result';
         this.hideGameControls();
         
@@ -779,17 +858,22 @@ class Game {
         // Mark that first card has been placed
         if (!this.firstCardPlaced) {
             this.firstCardPlaced = true;
-                    // Enable Check Stacks button after first successful card placement
-        const sneakPeakBtn = document.getElementById('sneak-peak-btn');
-        if (sneakPeakBtn) {
-            sneakPeakBtn.disabled = false;
-        }
-        
-        // Enable Sneak Peak button after first successful card placement
-        const peekNextBtn = document.getElementById('peek-next-btn');
-        if (peekNextBtn) {
-            peekNextBtn.disabled = false;
-        }
+            // Enable Check Stacks button after first successful card placement
+            if (this.elements.sneakPeakBtn) {
+                this.elements.sneakPeakBtn.disabled = false;
+            }
+            
+            // Enable Sneak Peak button after first successful card placement
+            if (this.elements.peekNextBtn) {
+                this.elements.peekNextBtn.disabled = false;
+            }
+            
+            // Track power-ups becoming available
+            AnalyticsService.track('power_ups_available', {
+                event_category: 'gameplay',
+                event_label: 'first_card_placed',
+                value: 2
+            });
         }
         
         // If a new stack was selected during the animation, keep it selected
@@ -842,12 +926,10 @@ class Game {
 
     triggerAllStacksBurnAnimation() {
         // Track epic burn event
-        if (typeof gtag !== 'undefined') {
-            gtag('event', 'all_stacks_burned', {
-                'event_category': 'gameplay',
-                'event_label': 'epic_fire_animation'
-            });
-        }
+        AnalyticsService.track('all_stacks_burned', {
+            event_category: 'gameplay',
+            event_label: 'epic_fire_animation'
+        });
         
         // Get all stack containers and trigger fire on each one
         const allStackContainers = document.querySelectorAll('.card-stack');
@@ -914,20 +996,19 @@ class Game {
 
     updateGameInfo() {
         const remainingCards = this.deck.remainingCards();
-        document.getElementById('cards-remaining').textContent = remainingCards;
+        this.elements.cardsRemaining.textContent = remainingCards;
         
         // Calculate jokers remaining: total jokers (2) minus jokers drawn
         const jokersRemaining = 2 - this.jokersDrawn;
         
         // Update active stacks count
         const activeStacks = this.faceUpStacks.filter(stack => stack !== 'burned' && stack.length > 0).length;
-        document.getElementById('active-decks').textContent = activeStacks;
+        this.elements.activeDecks.textContent = activeStacks;
         
         // Show Joker count (including zero)
-        const jokerInfo = document.getElementById('joker-info');
-        if (jokerInfo) {
-            jokerInfo.textContent = `🃏 ${jokersRemaining} Joker${jokersRemaining !== 1 ? 's' : ''} remaining`;
-            jokerInfo.style.display = 'block'; // Always show, even when zero
+        if (this.elements.jokerInfo) {
+            this.elements.jokerInfo.textContent = `🃏 ${jokersRemaining} Joker${jokersRemaining !== 1 ? 's' : ''} remaining`;
+            this.elements.jokerInfo.style.display = 'block'; // Always show, even when zero
         }
     }
 
@@ -935,32 +1016,23 @@ class Game {
 
     endGame(won) {
         this.gameState = 'game-over';
-        const gameOverDiv = document.getElementById('game-over');
-        const titleElement = document.getElementById('game-over-title');
-        const messageElement = document.getElementById('game-over-message');
         
         const remainingCards = this.deck.remainingCards();
         
         // Track game outcome
-        if (typeof gtag !== 'undefined') {
-            gtag('event', 'game_end', {
-                'event_category': 'gameplay',
-                'event_label': won ? 'win' : 'lose',
-                'value': remainingCards || 0
-            });
-        }
+        AnalyticsService.trackGameEnd(won, remainingCards);
         
         if (won) {
-            titleElement.textContent = 'Congratulations!';
-            titleElement.style.color = '#4caf50';
-            messageElement.textContent = `You beat the deck! All cards have been used.`;
+            this.elements.gameOverTitle.textContent = 'Congratulations!';
+            this.elements.gameOverTitle.style.color = '#4caf50';
+            this.elements.gameOverMessage.textContent = `You beat the deck! All cards have been used.`;
         } else {
-            titleElement.textContent = 'Oh No!';
-            titleElement.style.color = '#f44336';
-            messageElement.textContent = `${remainingCards} cards were still remaining. Better luck next time!`;
+            this.elements.gameOverTitle.textContent = 'Oh No!';
+            this.elements.gameOverTitle.style.color = '#f44336';
+            this.elements.gameOverMessage.textContent = `${remainingCards} cards were still remaining. Better luck next time!`;
         }
         
-        gameOverDiv.style.display = 'flex';
+        this.elements.gameOver.style.display = 'flex';
     }
 
     startNewGame() {
@@ -977,13 +1049,19 @@ class Game {
         this.firstCardPlaced = false; // Reset first card placed flag
         this.jokersDrawn = 0; // Reset jokers drawn counter
         this.stackToBurn = null; // Reset stack to burn
+        
+        // Track power-ups reset for new game
+        AnalyticsService.track('power_ups_reset', {
+            event_category: 'gameplay',
+            event_label: 'new_game_started',
+            value: 2
+        });
         this.tempXOffset = null; // Reset temporary offset
         this.tempYOffset = null; // Reset temporary offset
         
         // Hide game over screen
-        const gameOverDiv = document.getElementById('game-over');
-        if (gameOverDiv) {
-            gameOverDiv.style.display = 'none';
+        if (this.elements.gameOver) {
+            this.elements.gameOver.style.display = 'none';
         } else {
             console.error('Game over div not found');
         }
@@ -996,19 +1074,17 @@ class Game {
         this.initializeGame();
         
         // Reset Check Stacks button
-        const sneakPeakBtn = document.getElementById('sneak-peak-btn');
-        if (sneakPeakBtn) {
-            sneakPeakBtn.disabled = true; // Start disabled until first card is placed
-            sneakPeakBtn.textContent = 'Check Stacks';
-            sneakPeakBtn.classList.remove('active');
+        if (this.elements.sneakPeakBtn) {
+            this.elements.sneakPeakBtn.disabled = true; // Start disabled until first card is placed
+            this.elements.sneakPeakBtn.textContent = 'Check Stacks';
+            this.elements.sneakPeakBtn.classList.remove('active');
         }
         
         // Reset Sneak Peak button
-        const peekNextBtn = document.getElementById('peek-next-btn');
-        if (peekNextBtn) {
-            peekNextBtn.disabled = true; // Start disabled until first card is placed
-            peekNextBtn.textContent = 'Sneak Peak';
-            peekNextBtn.classList.remove('active');
+        if (this.elements.peekNextBtn) {
+            this.elements.peekNextBtn.disabled = true; // Start disabled until first card is placed
+            this.elements.peekNextBtn.textContent = 'Sneak Peak';
+            this.elements.peekNextBtn.classList.remove('active');
         }
         
         // Ensure game state is properly set
