@@ -39,6 +39,29 @@ h1 {
     align-items: center;
 }
 
+.joker-info {
+    background: linear-gradient(145deg, #ff6b35, #f7931e);
+    color: white;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 900;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 2px 8px rgba(255, 107, 53, 0.4);
+    animation: jokerPulse 2s ease-in-out infinite;
+}
+
+@keyframes jokerPulse {
+    0%, 100% {
+        transform: scale(1);
+        box-shadow: 0 2px 8px rgba(255, 107, 53, 0.4);
+    }
+    50% {
+        transform: scale(1.05);
+        box-shadow: 0 4px 12px rgba(255, 107, 53, 0.6);
+    }
+}
+
 /* Card rules tooltip */
 .card-rules-tooltip {
     position: relative;
@@ -263,27 +286,27 @@ h1 {
 
 @keyframes newCardPulse {
     0% {
-        transform: translateX(var(--card-offset, 0px)) scale(1);
+        transform: translate(var(--card-offset, 0px), var(--card-y-offset, 0px)) scale(1);
         box-shadow: 0 0 20px rgba(33, 150, 243, 0.6);
         background: linear-gradient(45deg, #fff, #e3f2fd, #fff);
     }
     25% {
-        transform: translateX(var(--card-offset, 0px)) scale(1.05);
+        transform: translate(var(--card-offset, 0px), var(--card-y-offset, 0px)) scale(1.05);
         box-shadow: 0 0 30px rgba(33, 150, 243, 0.8);
         background: linear-gradient(45deg, #e3f2fd, #bbdefb, #e3f2fd);
     }
     50% {
-        transform: translateX(var(--card-offset, 0px)) scale(1.02);
+        transform: translate(var(--card-offset, 0px), var(--card-y-offset, 0px)) scale(1.02);
         box-shadow: 0 0 25px rgba(33, 150, 243, 0.7);
         background: linear-gradient(45deg, #fff, #e3f2fd, #fff);
     }
     75% {
-        transform: translateX(var(--card-offset, 0px)) scale(1.05);
+        transform: translate(var(--card-offset, 0px), var(--card-y-offset, 0px)) scale(1.05);
         box-shadow: 0 0 30px rgba(33, 150, 243, 0.8);
         background: linear-gradient(45deg, #e3f2fd, #bbdefb, #e3f2fd);
     }
     100% {
-        transform: translateX(var(--card-offset, 0px)) scale(1);
+        transform: translate(var(--card-offset, 0px), var(--card-y-offset, 0px)) scale(1);
         box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
         background: white;
     }
@@ -291,27 +314,27 @@ h1 {
 
 @keyframes incorrectCardPulse {
     0% {
-        transform: translateX(var(--card-offset, 0px)) scale(1);
+        transform: translate(var(--card-offset, 0px), var(--card-y-offset, 0px)) scale(1);
         box-shadow: 0 0 20px rgba(244, 67, 54, 0.6);
         background: linear-gradient(45deg, #fff, #ffebee, #fff);
     }
     25% {
-        transform: translateX(var(--card-offset, 0px)) scale(1.05);
+        transform: translate(var(--card-offset, 0px), var(--card-y-offset, 0px)) scale(1.05);
         box-shadow: 0 0 30px rgba(244, 67, 54, 0.8);
         background: linear-gradient(45deg, #ffebee, #ffcdd2, #ffebee);
     }
     50% {
-        transform: translateX(var(--card-offset, 0px)) scale(1.02);
+        transform: translate(var(--card-offset, 0px), var(--card-y-offset, 0px)) scale(1.02);
         box-shadow: 0 0 25px rgba(244, 67, 54, 0.7);
         background: linear-gradient(45deg, #fff, #ffebee, #fff);
     }
     75% {
-        transform: translateX(var(--card-offset, 0px)) scale(1.05);
+        transform: translate(var(--card-offset, 0px), var(--card-y-offset, 0px)) scale(1.05);
         box-shadow: 0 0 30px rgba(244, 67, 54, 0.8);
         background: linear-gradient(45deg, #ffebee, #ffcdd2, #ffebee);
     }
     100% {
-        transform: translateX(var(--card-offset, 0px)) scale(1);
+        transform: translate(var(--card-offset, 0px), var(--card-y-offset, 0px)) scale(1);
         box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
         background: white;
     }
@@ -414,6 +437,36 @@ h1 {
 .card.black {
     color: #1a1a1a;
     text-shadow: 0 1px 2px rgba(26, 26, 26, 0.2);
+}
+
+.card.joker {
+    background: linear-gradient(145deg, #ff6b35, #f7931e);
+    color: white;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    border: 2px solid #ff4500;
+    box-shadow: 
+        0 4px 8px rgba(0, 0, 0, 0.2),
+        0 1px 3px rgba(0, 0, 0, 0.15),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+.card.joker .center-suit {
+    font-size: 3rem;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+}
+
+.card.joker:hover {
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 
+        0 8px 16px rgba(0, 0, 0, 0.3),
+        0 4px 8px rgba(0, 0, 0, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+
+.card.joker .rank {
+    font-size: 0.8rem;
+    font-weight: 900;
+    letter-spacing: -0.5px;
 }
 
 /* Celebration animation styles */
@@ -779,27 +832,27 @@ footer {
 /* Fire animation for when the final stack is burned */
 @keyframes burnStack {
     0% {
-        transform: translateX(var(--card-offset, 0px)) scale(1);
+        transform: translate(var(--card-offset, 0px), var(--card-y-offset, 0px)) scale(1);
         filter: brightness(1) saturate(1);
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
     }
     25% {
-        transform: translateX(var(--card-offset, 0px)) scale(1.05);
+        transform: translate(var(--card-offset, 0px), var(--card-y-offset, 0px)) scale(1.05);
         filter: brightness(1.2) saturate(1.5) hue-rotate(0deg);
         box-shadow: 0 0 20px rgba(255, 69, 0, 0.8), 0 0 40px rgba(255, 140, 0, 0.6);
     }
     50% {
-        transform: translateX(var(--card-offset, 0px)) scale(1.1);
+        transform: translate(var(--card-offset, 0px), var(--card-y-offset, 0px)) scale(1.1);
         filter: brightness(1.5) saturate(2) hue-rotate(0deg);
         box-shadow: 0 0 30px rgba(255, 69, 0, 1), 0 0 60px rgba(255, 140, 0, 0.8);
     }
     75% {
-        transform: translateX(var(--card-offset, 0px)) scale(1.05);
+        transform: translate(var(--card-offset, 0px), var(--card-y-offset, 0px)) scale(1.05);
         filter: brightness(1.3) saturate(1.8) hue-rotate(0deg);
         box-shadow: 0 0 25px rgba(255, 69, 0, 0.9), 0 0 50px rgba(255, 140, 0, 0.7);
     }
     100% {
-        transform: translateX(var(--card-offset, 0px)) scale(1);
+        transform: translate(var(--card-offset, 0px), var(--card-y-offset, 0px)) scale(1);
         filter: brightness(0.8) saturate(0.5) hue-rotate(0deg);
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
     }

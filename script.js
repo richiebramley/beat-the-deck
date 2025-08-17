@@ -6,6 +6,7 @@ class Card {
     }
 
     getValue() {
+        if (this.rank === 'JOKER') return 0; // Jokers have special value
         if (this.rank === 'A') return 14; // Ace is highest
         if (this.rank === 'K') return 13;
         if (this.rank === 'Q') return 12;
@@ -22,13 +23,19 @@ class Card {
             'hearts': '♥',
             'diamonds': '♦',
             'clubs': '♣',
-            'spades': '♠'
+            'spades': '♠',
+            'joker': '🃏'
         };
         return symbols[this.suit];
     }
 
     getColor() {
+        if (this.suit === 'joker') return 'joker';
         return (this.suit === 'hearts' || this.suit === 'diamonds') ? 'red' : 'black';
+    }
+    
+    isJoker() {
+        return this.suit === 'joker';
     }
 }
 
@@ -48,6 +55,10 @@ class Deck {
                 this.cards.push(new Card(suit, rank));
             }
         }
+        
+        // Add 2 Jokers as wildcards
+        this.cards.push(new Card('joker', 'JOKER'));
+        this.cards.push(new Card('joker', 'JOKER'));
     }
 
     shuffle() {
@@ -192,14 +203,16 @@ class Game {
         cardDiv.dataset.stackIndex = stackIndex;
         cardDiv.dataset.cardIndex = cardIndex;
         
-        // Add offset for stacked cards (only to the right)
+        // Add offset for stacked cards (right and down)
         if (cardIndex > 0) {
-            const offset = cardIndex * 11.25; // 11.25px offset per card (reduced by 25% from 15px)
-            cardDiv.style.transform = `translateX(${offset}px)`;
+            const xOffset = cardIndex * 11.25; // 11.25px offset per card (reduced by 25% from 15px)
+            const yOffset = cardIndex * 8; // 8px downward offset per card
+            cardDiv.style.transform = `translate(${xOffset}px, ${yOffset}px)`;
             cardDiv.style.zIndex = cardIndex; // Ensure proper layering
             
-            // Set CSS custom property for animations to preserve the offset
-            cardDiv.style.setProperty('--card-offset', `${offset}px`);
+            // Set CSS custom properties for animations to preserve the offset
+            cardDiv.style.setProperty('--card-offset', `${xOffset}px`);
+            cardDiv.style.setProperty('--card-y-offset', `${yOffset}px`);
         }
         
         if (this.selectedStackIndex === stackIndex) {
@@ -228,17 +241,31 @@ class Game {
             }, 2000);
         }
 
-        cardDiv.innerHTML = `
-            <div class="corner top-left">
-                <div class="rank">${card.getDisplayRank()}</div>
-                <div class="suit">${card.getSuitSymbol()}</div>
-            </div>
-            <div class="center-suit">${card.getSuitSymbol()}</div>
-            <div class="corner bottom-right">
-                <div class="rank">${card.getDisplayRank()}</div>
-                <div class="suit">${card.getSuitSymbol()}</div>
-            </div>
-        `;
+        if (card.isJoker()) {
+            // Special display for Jokers - only center symbol and corner text
+            cardDiv.innerHTML = `
+                <div class="corner top-left">
+                    <div class="rank">JOKER</div>
+                </div>
+                <div class="center-suit">🃏</div>
+                <div class="corner bottom-right">
+                    <div class="rank">JOKER</div>
+                </div>
+            `;
+        } else {
+            // Regular card display
+            cardDiv.innerHTML = `
+                <div class="corner top-left">
+                    <div class="rank">${card.getDisplayRank()}</div>
+                    <div class="suit">${card.getSuitSymbol()}</div>
+                </div>
+                <div class="center-suit">${card.getSuitSymbol()}</div>
+                <div class="corner bottom-right">
+                    <div class="rank">${card.getDisplayRank()}</div>
+                    <div class="suit">${card.getSuitSymbol()}</div>
+                </div>
+            `;
+        }
 
         // Add floating action buttons after setting innerHTML
         if (this.selectedStackIndex === stackIndex && cardIndex === totalCardsInStack - 1) {
@@ -466,6 +493,16 @@ class Game {
     }
 
     evaluateGuess(currentCard, drawnCard, guess) {
+        // Jokers are always valid - they can be placed on any card
+        if (drawnCard.isJoker()) {
+            return true;
+        }
+        
+        // If the current card is a Joker, any card can be placed on top
+        if (currentCard.isJoker()) {
+            return true;
+        }
+        
         if (currentCard.value === drawnCard.value) {
             return false; // Same value always burns the deck
         }
@@ -586,9 +623,26 @@ class Game {
 
 
     updateGameInfo() {
-        document.getElementById('cards-remaining').textContent = this.deck.remainingCards();
+        const remainingCards = this.deck.remainingCards();
+        document.getElementById('cards-remaining').textContent = remainingCards;
+        
+        // Count Jokers in remaining cards
+        const jokersRemaining = this.deck.cards.filter(card => card.isJoker()).length;
+        
+        // Update active stacks count
         const activeStacks = this.faceUpStacks.filter(stack => stack !== 'burned' && stack.length > 0).length;
         document.getElementById('active-decks').textContent = activeStacks;
+        
+        // Show Joker count if any remain
+        const jokerInfo = document.getElementById('joker-info');
+        if (jokerInfo) {
+            if (jokersRemaining > 0) {
+                jokerInfo.textContent = `🃏 ${jokersRemaining} Joker${jokersRemaining > 1 ? 's' : ''} remaining`;
+                jokerInfo.style.display = 'block';
+            } else {
+                jokerInfo.style.display = 'none';
+            }
+        }
     }
 
 
