@@ -225,8 +225,8 @@ class Game {
         // Add offset for stacked cards (right and down)
         if (cardIndex > 0) {
             // Use temporary offset if Sneak Peak power-up is active
-            const xOffset = cardIndex * (this.tempXOffset || 9); // 9px or 18px if power-up active
-            const yOffset = cardIndex * (this.tempYOffset || 8); // 8px or 16px if power-up active
+            const xOffset = cardIndex * (this.tempXOffset || 6.75); // 6.75px or 20.25px if power-up active (3x for dramatic effect)
+            const yOffset = cardIndex * (this.tempYOffset || 6); // 6px or 18px if power-up active (3x for dramatic effect)
             cardDiv.style.transform = `translate(${xOffset}px, ${yOffset}px)`;
             cardDiv.style.zIndex = cardIndex; // Ensure proper layering
             
@@ -391,9 +391,9 @@ class Game {
     }
     
     temporarilyIncreaseOffset() {
-        // Store original offset values
-        const originalXOffset = 9;
-        const originalYOffset = 8;
+        // Store original offset values (reduced by 25%)
+        const originalXOffset = 6.75; // Reduced from 9px
+        const originalYOffset = 6; // Reduced from 8px
         
         // Show countdown in button first
         this.showCountdown();
@@ -404,12 +404,12 @@ class Game {
             sneakPeakBtn.classList.add('active');
         }
         
-        // Animate to increased offset over 0.5 seconds
-        this.animateOffsetChange(originalXOffset, originalYOffset, originalXOffset * 2, originalYOffset * 2, 500);
+        // Animate to increased offset over 0.5 seconds (2x base + 50% additional = 3x total)
+        this.animateOffsetChange(originalXOffset, originalYOffset, originalXOffset * 3, originalYOffset * 3, 500);
         
         // Return to original offset after 3 seconds
         setTimeout(() => {
-            this.animateOffsetChange(originalXOffset * 2, originalYOffset * 2, originalXOffset, originalYOffset, 500);
+            this.animateOffsetChange(originalXOffset * 3, originalYOffset * 3, originalXOffset, originalYOffset, 500);
             
             // Remove active class and reset button text after animation
             setTimeout(() => {
