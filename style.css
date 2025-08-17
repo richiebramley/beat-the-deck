@@ -31,11 +31,26 @@ h1 {
 
 .game-info {
     display: flex;
+    flex-direction: column;
     justify-content: center;
-    gap: 30px;
+    gap: 15px;
     font-size: 1rem;
     font-weight: bold;
     align-items: center;
+}
+
+.game-info-row {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.game-counts-row {
+    gap: 30px;
+}
+
+.game-actions-row {
+    gap: 15px;
 }
 
 .joker-info {
@@ -904,8 +919,20 @@ h1 {
     }
     
     .game-info {
-        gap: 20px;
+        gap: 12px;
         font-size: 0.9rem;
+    }
+    
+    .game-info-row {
+        gap: 15px;
+    }
+    
+    .game-counts-row {
+        gap: 20px;
+    }
+    
+    .game-actions-row {
+        gap: 10px;
     }
     
     .face-up-cards {
@@ -961,10 +988,6 @@ h1 {
         height: 95%;
         max-height: none;
     }
-    
-
-    
-
 }
 
 @media (max-width: 480px) {
@@ -978,9 +1001,35 @@ h1 {
     }
     
     .game-info {
-        flex-direction: column;
         gap: 8px;
         font-size: 0.8rem;
+    }
+    
+    .game-info-row {
+        gap: 10px;
+    }
+    
+    .game-counts-row {
+        gap: 15px;
+    }
+    
+    .game-actions-row {
+        gap: 8px;
+    }
+    
+    .cards-remaining,
+    .active-decks {
+        font-size: 0.75rem;
+    }
+    
+    .joker-info,
+    .power-up-btn,
+    .card-rules-tooltip {
+        font-size: 0.7rem;
+    }
+    
+    .power-up-btn {
+        padding: 5px 8px;
     }
     
     .face-up-cards {
