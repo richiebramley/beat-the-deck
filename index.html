@@ -98,10 +98,8 @@
                     <h1>Beat the Deck</h1>
                 </div>
                 <div class="header-right">
-                    <button class="hamburger-menu" id="hamburger-menu" aria-label="Open menu" aria-expanded="false">
-                        <span class="hamburger-line"></span>
-                        <span class="hamburger-line"></span>
-                        <span class="hamburger-line"></span>
+                    <button class="question-menu" id="hamburger-menu" aria-label="Open menu" aria-expanded="false">
+                        <span class="question-mark">?</span>
                     </button>
                 </div>
             </div>
@@ -115,13 +113,6 @@
                 <div class="game-info-row game-actions-row">
                     <div id="joker-info" class="joker-info" style="display: none;">🃏 2 Jokers remaining</div>
                     <button id="sneak-peak-btn" class="power-up-btn">Sneak Peak</button>
-                                    <div class="card-rules-tooltip">
-                    <span class="tooltip-trigger" tabindex="0" role="button" aria-label="Card ranking rules">?</span>
-                    <div class="tooltip-content">
-                        <div class="tooltip-line">Ace is high, 2 is low.</div>
-                        <div class="tooltip-line">Jokers are wildcards!</div>
-                    </div>
-                </div>
                 </div>
             </div>
         </header>
@@ -148,14 +139,16 @@
     <div class="menu-overlay" id="menu-overlay">
         <div class="menu-content">
             <div class="menu-header">
-                <h2>About Beat the Deck</h2>
+                <h2>How to play Beat the Deck</h2>
                 <button class="close-menu" id="close-menu" aria-label="Close menu">×</button>
             </div>
             
             <div class="menu-content-single">
-                <p>Beat the Deck is a free online card game that challenges your strategic thinking and luck. Based on the classic "Higher or Lower" concept, this game adds a unique twist with multiple stacks and strategic decision-making.</p>
-                
-                <p>Use all remaining cards in the deck by correctly guessing whether the next card will be higher or lower than the current card on your chosen stack.</p>
+                <p>Guess if the next card will be higher or lower than the current card on your chosen stack. Use all remaining cards to BEAT THE DECK!</p>
+                <p>Ace is high, 2 is low. Same card value is not allowed.</p>    
+                <p>Use the Sneak Peak power-up to see the previously placed cards in active stacks.</p>
+                <p>Jokers are wildcards that can be higher or lower than any other card.</p>
+                <p>Burned stacks are removed from the game. Burn all 9 and you're out!</p>
             </div>
         </div>
     </div>

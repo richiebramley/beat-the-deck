@@ -25,7 +25,7 @@ header {
 
 h1 {
     font-size: 2rem;
-    margin-bottom: 15px;
+    margin: 0;
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
 }
 
@@ -625,7 +625,7 @@ h1 {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 15px;
+    margin: 15px 0px 15px 0px;
 }
 
 .header-left {
@@ -636,6 +636,9 @@ h1 {
 .header-middle {
     flex: 1;
     text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .header-right {
@@ -693,28 +696,29 @@ h1 {
 
 
 
-/* Hamburger Menu Styles */
-.hamburger-menu {
+/* Question Menu Styles */
+.question-menu {
     background: none;
     border: none;
     cursor: pointer;
     padding: 8px;
     display: flex;
-    flex-direction: column;
-    gap: 4px;
+    align-items: center;
+    justify-content: center;
     border-radius: 4px;
     transition: background-color 0.3s ease;
+    width: 40px;
+    height: 40px;
 }
 
-.hamburger-menu:hover {
+.question-menu:hover {
     background-color: rgba(255, 255, 255, 0.1);
 }
 
-.hamburger-line {
-    width: 24px;
-    height: 3px;
-    background-color: #fff;
-    border-radius: 2px;
+.question-mark {
+    color: #fff;
+    font-size: 1.5rem;
+    font-weight: bold;
     transition: all 0.3s ease;
 }
 
