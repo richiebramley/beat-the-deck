@@ -88,6 +88,7 @@ class Game {
         this.lastGuessResult = null;
         this.sneakPeakUsed = false; // Track if Sneak Peak power-up has been used
         this.firstCardPlaced = false; // Track if first card has been successfully placed
+        this.jokersDrawn = 0; // Track total jokers that have been drawn from deck
         
         this.initializeGame();
         this.bindEvents();
@@ -96,7 +97,13 @@ class Game {
     initializeGame() {
         // Deal 9 cards face up
         for (let i = 0; i < 9; i++) {
-            this.faceUpStacks.push([this.deck.drawCard()]);
+            const drawnCard = this.deck.drawCard();
+            this.faceUpStacks.push([drawnCard]);
+            
+            // Track if a joker was drawn in the initial deal
+            if (drawnCard.isJoker()) {
+                this.jokersDrawn++;
+            }
         }
         
         // Initialize Sneak Peak button (disabled until first card is placed)
@@ -620,6 +627,11 @@ class Game {
         this.lastGuess = guess;
         this.lastDrawnCard = this.deck.drawCard();
         
+        // Track if a joker was drawn
+        if (this.lastDrawnCard.isJoker()) {
+            this.jokersDrawn++;
+        }
+        
         const selectedStack = this.faceUpStacks[this.selectedStackIndex];
         const topCard = selectedStack[selectedStack.length - 1];
         
@@ -795,14 +807,8 @@ class Game {
         const remainingCards = this.deck.remainingCards();
         document.getElementById('cards-remaining').textContent = remainingCards;
         
-        // Count Jokers in remaining deck AND face-up stacks
-        const jokersInDeck = this.deck.cards.filter(card => card.isJoker()).length;
-        const jokersInStacks = this.faceUpStacks
-            .filter(stack => stack !== 'burned' && stack.length > 0)
-            .flat()
-            .filter(card => card.isJoker()).length;
-        const totalJokersUsed = jokersInStacks;
-        const jokersRemaining = 2 - totalJokersUsed; // Total Jokers minus used ones
+        // Calculate jokers remaining: total jokers (2) minus jokers drawn
+        const jokersRemaining = 2 - this.jokersDrawn;
         
         // Update active stacks count
         const activeStacks = this.faceUpStacks.filter(stack => stack !== 'burned' && stack.length > 0).length;
@@ -859,6 +865,7 @@ class Game {
         this.lastGuessResult = null;
         this.sneakPeakUsed = false; // Reset Sneak Peak power-up
         this.firstCardPlaced = false; // Reset first card placed flag
+        this.jokersDrawn = 0; // Reset jokers drawn counter
         this.tempXOffset = null; // Reset temporary offset
         this.tempYOffset = null; // Reset temporary offset
         

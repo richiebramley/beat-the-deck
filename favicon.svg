@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <!-- Card background -->
+  <rect x="2" y="4" width="28" height="24" rx="3" fill="#ffffff" stroke="#333333" stroke-width="1"/>
+  
+  <!-- Card suit symbols -->
+  <text x="16" y="18" font-family="Arial, sans-serif" font-size="12" text-anchor="middle" fill="#ff0000">♠</text>
+  
+  <!-- Small corner symbols -->
+  <text x="6" y="12" font-family="Arial, sans-serif" font-size="8" fill="#333333">A</text>
+  <text x="26" y="28" font-family="Arial, sans-serif" font-size="8" fill="#333333" text-anchor="end">A</text>
+</svg>
