@@ -86,7 +86,8 @@ class Game {
         this.lastDrawnCard = null;
         this.lastGuess = null;
         this.lastGuessResult = null;
-        this.sneakPeakUsed = false; // Track if Sneak Peak power-up has been used
+        this.sneakPeakUsed = false; // Track if Check Stacks power-up has been used
+        this.peekNextUsed = false; // Track if Sneak Peak power-up has been used
         this.firstCardPlaced = false; // Track if first card has been successfully placed
         this.jokersDrawn = 0; // Track total jokers that have been drawn from deck
         this.stackToBurn = null; // Track which stack should be burned for incorrect guesses
@@ -107,12 +108,20 @@ class Game {
             }
         }
         
-        // Initialize Sneak Peak button (disabled until first card is placed)
+        // Initialize Check Stacks button (disabled until first card is placed)
         const sneakPeakBtn = document.getElementById('sneak-peak-btn');
         if (sneakPeakBtn) {
             sneakPeakBtn.disabled = true; // Start disabled
-            sneakPeakBtn.textContent = 'Sneak Peak';
+            sneakPeakBtn.textContent = 'Check Stacks';
             sneakPeakBtn.classList.remove('active');
+        }
+        
+        // Initialize Sneak Peak button (disabled until first card is placed)
+        const peekNextBtn = document.getElementById('peek-next-btn');
+        if (peekNextBtn) {
+            peekNextBtn.disabled = true; // Start disabled
+            peekNextBtn.textContent = 'Sneak Peak';
+            peekNextBtn.classList.remove('active');
         }
         
         this.renderFaceUpCards();
@@ -151,6 +160,8 @@ class Game {
                 }
             } else if (e.target && e.target.id === 'sneak-peak-btn') {
                 this.useSneakPeak();
+            } else if (e.target && e.target.id === 'peek-next-btn') {
+                this.usePeekNext();
             } else if (e.target && e.target.classList.contains('game-container') || 
                        e.target.classList.contains('game-area') || 
                        e.target.classList.contains('face-up-cards')) {
@@ -232,7 +243,7 @@ class Game {
         
         // Add offset for stacked cards (right and down)
         if (cardIndex > 0) {
-            // Use temporary offset if Sneak Peak power-up is active
+            // Use temporary offset if Check Stacks power-up is active
             const xOffset = cardIndex * (this.tempXOffset || 4); // 6.75px or 20.25px if power-up active (3x for dramatic effect)
             const yOffset = cardIndex * (this.tempYOffset || 3.5); // 6px or 18px if power-up active (3x for dramatic effect)
             cardDiv.style.transform = `translate(${xOffset}px, ${yOffset}px)`;
@@ -406,6 +417,74 @@ class Game {
         }
     }
     
+    usePeekNext() {
+        if (this.peekNextUsed) return; // Can only use once per game
+        
+        this.peekNextUsed = true;
+        
+        // Get the next card without removing it from the deck
+        const nextCard = this.deck.cards[this.deck.cards.length - 1];
+        
+        // Show the next card information
+        this.showNextCardInfo(nextCard);
+        
+        // Disable the button
+        const peekNextBtn = document.getElementById('peek-next-btn');
+        if (peekNextBtn) {
+            peekNextBtn.disabled = true;
+            peekNextBtn.textContent = 'Used';
+        }
+        
+        // Track power-up usage
+        if (typeof gtag !== 'undefined') {
+            gtag('event', 'power_up_used', {
+                'event_category': 'gameplay',
+                'event_label': 'peek_next'
+            });
+        }
+    }
+    
+    showNextCardInfo(nextCard) {
+        // Create an overlay card that appears over the game area
+        const nextCardOverlay = document.createElement('div');
+        nextCardOverlay.className = 'next-card-overlay';
+        nextCardOverlay.innerHTML = `
+            <div class="next-card ${nextCard.getColor()}">
+                <div class="corner top-left">
+                    <div class="rank">${nextCard.getDisplayRank()}</div>
+                    <div class="suit">${nextCard.getSuitSymbol()}</div>
+                </div>
+                <div class="center-suit">${nextCard.getSuitSymbol()}</div>
+                <div class="corner bottom-right">
+                    <div class="rank">${nextCard.getDisplayRank()}</div>
+                    <div class="suit">${nextCard.getSuitSymbol()}</div>
+                </div>
+            </div>
+        `;
+        
+        // Add to the game area as an overlay
+        const gameArea = document.querySelector('.game-area');
+        if (gameArea) {
+            gameArea.appendChild(nextCardOverlay);
+        }
+        
+        // Animate in
+        setTimeout(() => {
+            nextCardOverlay.classList.add('visible');
+        }, 100);
+        
+        // Animate out after 3 seconds
+        setTimeout(() => {
+            nextCardOverlay.classList.remove('visible');
+            // Remove from DOM after animation completes
+            setTimeout(() => {
+                if (nextCardOverlay.parentNode) {
+                    nextCardOverlay.parentNode.removeChild(nextCardOverlay);
+                }
+            }, 500);
+        }, 3000);
+    }
+    
     temporarilyIncreaseOffset() {
         // Store original offset values (reduced by 25%)
         const originalXOffset = 6.75; // Reduced from 9px
@@ -442,7 +521,7 @@ class Game {
                 this.renderFaceUpCards();
                 
                 // Double-check that offsets are reset by logging (for debugging)
-                console.log('Sneak Peak power-up ended - offsets reset to:', this.tempXOffset, this.tempYOffset);
+                console.log('Check Stacks power-up ended - offsets reset to:', this.tempXOffset, this.tempYOffset);
             }, 500);
         }, 5000);
     }
@@ -700,11 +779,17 @@ class Game {
         // Mark that first card has been placed
         if (!this.firstCardPlaced) {
             this.firstCardPlaced = true;
-            // Enable Sneak Peak button after first successful card placement
-            const sneakPeakBtn = document.getElementById('sneak-peak-btn');
-            if (sneakPeakBtn) {
-                sneakPeakBtn.disabled = false;
-            }
+                    // Enable Check Stacks button after first successful card placement
+        const sneakPeakBtn = document.getElementById('sneak-peak-btn');
+        if (sneakPeakBtn) {
+            sneakPeakBtn.disabled = false;
+        }
+        
+        // Enable Sneak Peak button after first successful card placement
+        const peekNextBtn = document.getElementById('peek-next-btn');
+        if (peekNextBtn) {
+            peekNextBtn.disabled = false;
+        }
         }
         
         // If a new stack was selected during the animation, keep it selected
@@ -887,7 +972,8 @@ class Game {
         this.lastDrawnCard = null;
         this.lastGuess = null;
         this.lastGuessResult = null;
-        this.sneakPeakUsed = false; // Reset Sneak Peak power-up
+        this.sneakPeakUsed = false; // Reset Check Stacks power-up
+        this.peekNextUsed = false; // Reset Sneak Peak power-up
         this.firstCardPlaced = false; // Reset first card placed flag
         this.jokersDrawn = 0; // Reset jokers drawn counter
         this.stackToBurn = null; // Reset stack to burn
@@ -909,12 +995,20 @@ class Game {
         // Initialize new game
         this.initializeGame();
         
-        // Reset Sneak Peak button
+        // Reset Check Stacks button
         const sneakPeakBtn = document.getElementById('sneak-peak-btn');
         if (sneakPeakBtn) {
             sneakPeakBtn.disabled = true; // Start disabled until first card is placed
-            sneakPeakBtn.textContent = 'Sneak Peak';
+            sneakPeakBtn.textContent = 'Check Stacks';
             sneakPeakBtn.classList.remove('active');
+        }
+        
+        // Reset Sneak Peak button
+        const peekNextBtn = document.getElementById('peek-next-btn');
+        if (peekNextBtn) {
+            peekNextBtn.disabled = true; // Start disabled until first card is placed
+            peekNextBtn.textContent = 'Sneak Peak';
+            peekNextBtn.classList.remove('active');
         }
         
         // Ensure game state is properly set

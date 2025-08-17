@@ -100,6 +100,76 @@ h1 {
     100% { transform: scale(1); }
 }
 
+/* Next Card Overlay Animation */
+.next-card-overlay {
+    position: fixed;
+    top: 120px;
+    right: 20px;
+    transform: scale(0.5);
+    z-index: 1000;
+    opacity: 0;
+    transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    pointer-events: none;
+}
+
+.next-card-overlay.visible {
+    opacity: 1;
+    transform: scale(1);
+}
+
+.next-card-overlay .next-card {
+    display: block;
+    width: 120px;
+    height: 180px;
+    background: white;
+    border: 3px solid #9c27b0;
+    border-radius: 12px;
+    position: relative;
+    box-shadow: 0 8px 25px rgba(156, 39, 176, 0.6);
+    transform: rotateY(0deg);
+    transition: transform 0.3s ease;
+}
+
+.next-card-overlay.visible .next-card {
+    transform: rotateY(360deg);
+}
+
+.next-card.red .rank,
+.next-card.red .suit,
+.next-card.red .center-suit {
+    color: #d32f2f;
+}
+
+.next-card.black .rank,
+.next-card.black .suit,
+.next-card.black .center-suit {
+    color: #212121;
+}
+
+.next-card .corner {
+    position: absolute;
+    font-size: 1.2rem;
+    font-weight: bold;
+}
+
+.next-card .corner.top-left {
+    top: 8px;
+    left: 8px;
+}
+
+.next-card .corner.bottom-right {
+    bottom: 8px;
+    right: 8px;
+}
+
+.next-card .center-suit {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 3rem;
+}
+
 
 
 /* Card rules tooltip */

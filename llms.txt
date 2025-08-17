@@ -17,7 +17,7 @@
 - Players draw cards and guess if the next card will be higher or lower
 - Correct guesses add cards to stacks, incorrect guesses burn entire stacks
 - Goal is to use all 52 cards before all stacks are burned
-- Special features include Joker wildcards and Sneak Peak power-up
+- Special features include Joker wildcards and Check Stacks power-up
 
 ## Technical Details
 - Built with HTML5, CSS3, and vanilla JavaScript
