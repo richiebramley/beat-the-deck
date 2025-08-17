@@ -146,10 +146,13 @@ h1 {
     padding: 8px 12px;
     border-radius: 6px;
     font-size: 0.9rem;
-    white-space: nowrap;
+    white-space: normal;
+    max-width: 250px;
+    width: max-content;
     z-index: 1000;
     transition: opacity 0.3s ease, visibility 0.3s ease;
     pointer-events: none;
+    word-wrap: break-word;
 }
 
 .tooltip-content::after {
@@ -935,6 +938,13 @@ h1 {
         gap: 10px;
     }
     
+    /* Mobile tooltip adjustments */
+    .tooltip-content {
+        max-width: 220px;
+        font-size: 0.8rem;
+        padding: 7px 11px;
+    }
+    
     .face-up-cards {
         gap: 6px;
         margin-bottom: 15px;
@@ -1030,6 +1040,13 @@ h1 {
     
     .power-up-btn {
         padding: 5px 8px;
+    }
+    
+    /* Mobile tooltip adjustments */
+    .tooltip-content {
+        max-width: 200px;
+        font-size: 0.75rem;
+        padding: 6px 10px;
     }
     
     .face-up-cards {
