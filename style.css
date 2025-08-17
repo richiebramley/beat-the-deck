@@ -166,6 +166,15 @@ h1 {
     border-color: rgba(0, 0, 0, 0.9) transparent transparent transparent;
 }
 
+.tooltip-line {
+    display: block;
+    line-height: 1.3;
+}
+
+.tooltip-line:first-child {
+    margin-bottom: 4px;
+}
+
 .card-rules-tooltip:hover .tooltip-content,
 .card-rules-tooltip:focus-within .tooltip-content {
     visibility: visible;
