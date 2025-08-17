@@ -48,19 +48,45 @@ h1 {
     font-weight: 900;
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
     box-shadow: 0 2px 8px rgba(255, 107, 53, 0.4);
-    animation: jokerPulse 2s ease-in-out infinite;
 }
 
-@keyframes jokerPulse {
-    0%, 100% {
-        transform: scale(1);
-        box-shadow: 0 2px 8px rgba(255, 107, 53, 0.4);
-    }
-    50% {
-        transform: scale(1.05);
-        box-shadow: 0 4px 12px rgba(255, 107, 53, 0.6);
-    }
+.power-up-btn {
+    background: linear-gradient(145deg, #9c27b0, #673ab7);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 900;
+    cursor: pointer;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 2px 8px rgba(156, 39, 176, 0.4);
+    transition: all 0.3s ease;
 }
+
+.power-up-btn:hover:not(:disabled) {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(156, 39, 176, 0.6);
+}
+
+.power-up-btn:disabled {
+    background: linear-gradient(145deg, #757575, #616161);
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.power-up-btn.active {
+    background: linear-gradient(145deg, #ff9800, #ff5722);
+    animation: powerUpPulse 0.5s ease-in-out;
+}
+
+@keyframes powerUpPulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
+
+
 
 /* Card rules tooltip */
 .card-rules-tooltip {
@@ -136,6 +162,14 @@ h1 {
     max-width: 100%;
     margin: 0 auto 20px;
     padding: 0 5px;
+    min-height: 300px; /* Ensure there's enough clickable area */
+    cursor: default; /* Show default cursor on background */
+}
+
+.game-area {
+    margin: 20px 0;
+    min-height: 400px; /* Ensure there's enough clickable area */
+    cursor: default; /* Show default cursor on background */
 }
 
 /* Card stack container */
@@ -160,7 +194,7 @@ h1 {
     font-size: 1.2rem;
     font-weight: bold;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all 0.3s ease, transform 0.5s ease; /* Smooth transform transitions */
     border: 2px solid transparent;
     padding: 8px;
     box-shadow: 
@@ -439,23 +473,26 @@ h1 {
     text-shadow: 0 1px 2px rgba(26, 26, 26, 0.2);
 }
 
-.card.joker {
-    background: linear-gradient(145deg, #ff6b35, #f7931e);
-    color: white;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
-    border: 2px solid #ff4500;
+.card.joker,
+.joker-card {
+    background: linear-gradient(145deg, #ff6b35, #f7931e) !important;
+    color: white !important;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3) !important;
+    border: 2px solid #ff4500 !important;
     box-shadow: 
         0 4px 8px rgba(0, 0, 0, 0.2),
         0 1px 3px rgba(0, 0, 0, 0.15),
-        inset 0 1px 0 rgba(255, 255, 255, 0.3);
+        inset 0 1px 0 rgba(255, 255, 255, 0.3) !important;
 }
 
-.card.joker .center-suit {
+.card.joker .center-suit,
+.joker-card .center-suit {
     font-size: 3rem;
     filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
 }
 
-.card.joker:hover {
+.card.joker:hover,
+.joker-card:hover {
     transform: translateY(-3px) scale(1.02);
     box-shadow: 
         0 8px 16px rgba(0, 0, 0, 0.3),
@@ -463,7 +500,8 @@ h1 {
         inset 0 1px 0 rgba(255, 255, 255, 0.4);
 }
 
-.card.joker .rank {
+.card.joker .rank,
+.joker-card .rank {
     font-size: 0.8rem;
     font-weight: 900;
     letter-spacing: -0.5px;
