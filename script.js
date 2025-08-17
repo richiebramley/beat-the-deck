@@ -94,7 +94,6 @@ class Game {
         // Use event delegation for all game buttons since they're created dynamically
         document.addEventListener('click', (e) => {
             if (e.target && e.target.id === 'higher-btn') {
-                console.log('Higher button clicked'); // Debug log
                 this.makeGuess('higher');
                 // Track game interaction
                 if (typeof gtag !== 'undefined') {
@@ -104,7 +103,6 @@ class Game {
                     });
                 }
             } else if (e.target && e.target.id === 'lower-btn') {
-                console.log('Lower button clicked'); // Debug log
                 this.makeGuess('lower');
                 // Track game interaction
                 if (typeof gtag !== 'undefined') {
@@ -114,7 +112,6 @@ class Game {
                     });
                 }
             } else if (e.target && e.target.id === 'new-game-btn') {
-                console.log('New Game button clicked'); // Debug log
                 this.startNewGame();
                 // Track new game
                 if (typeof gtag !== 'undefined') {
@@ -125,7 +122,6 @@ class Game {
                 }
             }
         });
-        console.log('All game button event delegation set up'); // Debug log
         
         // Bind hamburger menu events
         this.bindMenuEvents();
@@ -163,30 +159,59 @@ class Game {
 
         this.faceUpStacks.forEach((stack, index) => {
             if (stack === 'burned') {
+                // Create a stack container for burned stacks to maintain grid position
+                const stackContainer = document.createElement('div');
+                stackContainer.className = 'card-stack';
+                stackContainer.dataset.stackIndex = index;
+                
                 // Show burned stack as face-down card
                 const burnedCard = this.createBurnedCardElement(index);
-                container.appendChild(burnedCard);
+                stackContainer.appendChild(burnedCard);
+                
+                container.appendChild(stackContainer);
             } else if (stack.length > 0) {
-                // Show active stack with top card
-                const topCard = stack[stack.length - 1];
-                const cardElement = this.createCardElement(topCard, index);
-                container.appendChild(cardElement);
+                // Create a stack container for multiple cards
+                const stackContainer = document.createElement('div');
+                stackContainer.className = 'card-stack';
+                stackContainer.dataset.stackIndex = index;
+                
+                // Render all cards in the stack with offset
+                stack.forEach((card, cardIndex) => {
+                    const cardElement = this.createCardElement(card, index, cardIndex, stack.length);
+                    stackContainer.appendChild(cardElement);
+                });
+                
+                container.appendChild(stackContainer);
             }
         });
     }
 
-    createCardElement(card, stackIndex) {
+    createCardElement(card, stackIndex, cardIndex, totalCardsInStack) {
         const cardDiv = document.createElement('div');
         cardDiv.className = `card ${card.getColor()}`;
         cardDiv.dataset.stackIndex = stackIndex;
+        cardDiv.dataset.cardIndex = cardIndex;
+        
+        // Add offset for stacked cards (only to the right)
+        if (cardIndex > 0) {
+            const offset = cardIndex * 11.25; // 11.25px offset per card (reduced by 25% from 15px)
+            cardDiv.style.transform = `translateX(${offset}px)`;
+            cardDiv.style.zIndex = cardIndex; // Ensure proper layering
+            
+            // Set CSS custom property for animations to preserve the offset
+            cardDiv.style.setProperty('--card-offset', `${offset}px`);
+        }
         
         if (this.selectedStackIndex === stackIndex) {
-            // If this is a correct guess, show green outline instead of blue
-            if (this.lastGuessResult === true && this.gameState === 'showing-result') {
-                cardDiv.classList.add('correct-guess');
-            } else {
-                // Only add selected class if not showing correct result
-                cardDiv.classList.add('selected');
+            // Only highlight the top card (highest cardIndex) in the selected stack
+            if (cardIndex === totalCardsInStack - 1) {
+                // If this is a correct guess, show green outline instead of blue
+                if (this.lastGuessResult === true && this.gameState === 'showing-result') {
+                    cardDiv.classList.add('correct-guess');
+                } else {
+                    // Only add selected class if not showing correct result
+                    cardDiv.classList.add('selected');
+                }
             }
         }
 
@@ -216,7 +241,7 @@ class Game {
         `;
 
         // Add floating action buttons after setting innerHTML
-        if (this.selectedStackIndex === stackIndex) {
+        if (this.selectedStackIndex === stackIndex && cardIndex === totalCardsInStack - 1) {
             const floatingButtons = document.createElement('div');
             floatingButtons.className = 'floating-guess-buttons';
             floatingButtons.innerHTML = `
@@ -250,6 +275,7 @@ class Game {
         
         cardDiv.innerHTML = `
             <div class="burned-indicator">BURNED</div>
+            <div class="skull-crossbones">☠</div>
         `;
         
         return cardDiv;
@@ -302,8 +328,6 @@ class Game {
     }
 
     triggerCelebration() {
-        console.log('🎉 Triggering celebration animation!');
-        
         // Track celebration event
         if (typeof gtag !== 'undefined') {
             gtag('event', 'celebration_triggered', {
@@ -471,7 +495,9 @@ class Game {
         const activeStacks = this.faceUpStacks.filter(stack => stack !== 'burned' && stack.length > 0).length;
         
         if (activeStacks === 0) {
-            this.endGame(false); // Lose - all stacks burned
+            // All stacks are now burned - trigger fire animation on ALL stacks
+            this.triggerAllStacksBurnAnimation();
+            setTimeout(() => this.endGame(false), 4000); // Show fire animation for 4 seconds
             return;
         }
         
@@ -485,6 +511,74 @@ class Game {
         this.lastDrawnCard = null; // Clear the drawn card reference
         this.lastGuessResult = null; // Clear the guess result
         this.updateGameInfo();
+    }
+
+    triggerAllStacksBurnAnimation() {
+        // Track epic burn event
+        if (typeof gtag !== 'undefined') {
+            gtag('event', 'all_stacks_burned', {
+                'event_category': 'gameplay',
+                'event_label': 'epic_fire_animation'
+            });
+        }
+        
+        // Get all stack containers and trigger fire on each one
+        const allStackContainers = document.querySelectorAll('.card-stack');
+        
+        allStackContainers.forEach((stackContainer, stackIndex) => {
+            const cards = stackContainer.querySelectorAll('.card');
+            
+            // Stagger the burning effect between different stacks
+            setTimeout(() => {
+                cards.forEach((card, cardIndex) => {
+                    // Add burning class with delay for each card within the stack
+                    setTimeout(() => {
+                        card.classList.add('burning');
+                        // Create fire particles for this card
+                        this.createFireParticles(card, cardIndex);
+                    }, cardIndex * 150); // Slightly faster burning within each stack
+                });
+            }, stackIndex * 200); // Stagger between different stacks (reduced from 300ms)
+        });
+    }
+
+    createFireParticles(card, cardIndex) {
+        // Create multiple fire particles for each card
+        for (let i = 0; i < 8; i++) {
+            setTimeout(() => {
+                this.createFireParticle(card, cardIndex);
+            }, i * 100); // Stagger particle creation
+        }
+    }
+
+    createFireParticle(card, cardIndex) {
+        const particle = document.createElement('div');
+        particle.className = 'fire-particle';
+        
+        // Position particle relative to the card
+        const cardRect = card.getBoundingClientRect();
+        const stackContainer = card.closest('.card-stack');
+        const stackRect = stackContainer.getBoundingClientRect();
+        
+        // Calculate position relative to the stack container
+        const relativeX = cardRect.left - stackRect.left + (cardRect.width / 2);
+        const relativeY = cardRect.top - stackRect.top + (cardRect.height / 2);
+        
+        // Add offset for stacked cards
+        const offset = cardIndex * 11.25;
+        
+        particle.style.left = (relativeX + offset) + 'px';
+        particle.style.top = relativeY + 'px';
+        
+        // Add to the stack container
+        stackContainer.appendChild(particle);
+        
+        // Remove particle after animation completes
+        setTimeout(() => {
+            if (particle.parentNode) {
+                particle.parentNode.removeChild(particle);
+            }
+        }, 2000);
     }
 
 
@@ -521,17 +615,15 @@ class Game {
             titleElement.style.color = '#4caf50';
             messageElement.textContent = `You beat the deck! All cards have been used.`;
         } else {
-            titleElement.textContent = 'Game Over';
+            titleElement.textContent = 'Oh No!';
             titleElement.style.color = '#f44336';
-            messageElement.textContent = `All face-up decks have been burned. ${remainingCards} cards were still remaining. Better luck next time!`;
+            messageElement.textContent = `${remainingCards} cards were still remaining. Better luck next time!`;
         }
         
         gameOverDiv.style.display = 'flex';
     }
 
     startNewGame() {
-        console.log('startNewGame called'); // Debug log
-        
         // Reset everything
         this.deck = new Deck();
         this.faceUpStacks = [];
@@ -541,29 +633,23 @@ class Game {
         this.lastGuess = null;
         this.lastGuessResult = null;
         
-        console.log('Game state reset, deck cards:', this.deck.remainingCards()); // Debug log
-        
         // Hide game over screen
         const gameOverDiv = document.getElementById('game-over');
         if (gameOverDiv) {
             gameOverDiv.style.display = 'none';
-            console.log('Game over screen hidden'); // Debug log
         } else {
-            console.error('Game over div not found'); // Debug log
+            console.error('Game over div not found');
         }
         
         // Clear any existing floating buttons
         const existingButtons = document.querySelectorAll('.floating-guess-buttons');
         existingButtons.forEach(button => button.remove());
-        console.log('Cleared', existingButtons.length, 'floating buttons'); // Debug log
         
         // Initialize new game
         this.initializeGame();
-        console.log('Game initialized, face-up stacks:', this.faceUpStacks.length); // Debug log
         
         // Ensure game state is properly set
         this.updateGameInfo();
-        console.log('Game info updated'); // Debug log
     }
 }
 
@@ -573,8 +659,4 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Make game instance globally accessible for console testing
     window.game = game;
-    
-    console.log('🎮 Beat the Deck game loaded!');
-    console.log('🎉 To test celebration animation, type: game.testCelebration()');
-    console.log('🏆 To test full winning sequence, type: game.testWinningSequence()');
 });

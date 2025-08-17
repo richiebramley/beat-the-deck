@@ -115,13 +115,24 @@ h1 {
     padding: 0 5px;
 }
 
+/* Card stack container */
+.card-stack {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 3/4;
+    max-width: 110px;
+    margin: 0 auto;
+}
+
 .card {
     width: 100%;
     aspect-ratio: 3/4;
     max-width: 110px;
     background: linear-gradient(145deg, #ffffff, #f8f9fa);
     border-radius: 12px;
-    position: relative;
+    position: absolute;
+    top: 0;
+    left: 0;
     color: black;
     font-size: 1.2rem;
     font-weight: bold;
@@ -133,11 +144,19 @@ h1 {
         0 4px 8px rgba(0, 0, 0, 0.15),
         0 1px 3px rgba(0, 0, 0, 0.1),
         inset 0 1px 0 rgba(255, 255, 255, 0.8);
-    margin: 0 auto;
     font-family: 'Georgia', serif;
 }
 
 .card:hover {
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 
+        0 8px 16px rgba(0, 0, 0, 0.2),
+        0 4px 8px rgba(0, 0, 0, 0.15),
+        inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+/* For stacked cards, preserve the right offset on hover */
+.card[data-card-index]:hover {
     transform: translateY(-3px) scale(1.02);
     box-shadow: 
         0 8px 16px rgba(0, 0, 0, 0.2),
@@ -154,7 +173,6 @@ h1 {
         0 4px 8px rgba(0, 0, 0, 0.15),
         inset 0 1px 0 rgba(255, 255, 255, 0.9);
     transform: translateY(-2px) scale(1.03);
-    position: relative;
 }
 
 .card.correct-guess {
@@ -173,7 +191,7 @@ h1 {
     display: flex;
     flex-direction: column;
     gap: 8px;
-    z-index: 10;
+    z-index: 100;
     pointer-events: none;
 }
 
@@ -245,27 +263,27 @@ h1 {
 
 @keyframes newCardPulse {
     0% {
-        transform: scale(1);
+        transform: translateX(var(--card-offset, 0px)) scale(1);
         box-shadow: 0 0 20px rgba(33, 150, 243, 0.6);
         background: linear-gradient(45deg, #fff, #e3f2fd, #fff);
     }
     25% {
-        transform: scale(1.05);
+        transform: translateX(var(--card-offset, 0px)) scale(1.05);
         box-shadow: 0 0 30px rgba(33, 150, 243, 0.8);
         background: linear-gradient(45deg, #e3f2fd, #bbdefb, #e3f2fd);
     }
     50% {
-        transform: scale(1.02);
+        transform: translateX(var(--card-offset, 0px)) scale(1.02);
         box-shadow: 0 0 25px rgba(33, 150, 243, 0.7);
         background: linear-gradient(45deg, #fff, #e3f2fd, #fff);
     }
     75% {
-        transform: scale(1.05);
+        transform: translateX(var(--card-offset, 0px)) scale(1.05);
         box-shadow: 0 0 30px rgba(33, 150, 243, 0.8);
         background: linear-gradient(45deg, #e3f2fd, #bbdefb, #e3f2fd);
     }
     100% {
-        transform: scale(1);
+        transform: translateX(var(--card-offset, 0px)) scale(1);
         box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
         background: white;
     }
@@ -273,27 +291,27 @@ h1 {
 
 @keyframes incorrectCardPulse {
     0% {
-        transform: scale(1);
+        transform: translateX(var(--card-offset, 0px)) scale(1);
         box-shadow: 0 0 20px rgba(244, 67, 54, 0.6);
         background: linear-gradient(45deg, #fff, #ffebee, #fff);
     }
     25% {
-        transform: scale(1.05);
+        transform: translateX(var(--card-offset, 0px)) scale(1.05);
         box-shadow: 0 0 30px rgba(244, 67, 54, 0.8);
         background: linear-gradient(45deg, #ffebee, #ffcdd2, #ffebee);
     }
     50% {
-        transform: scale(1.02);
+        transform: translateX(var(--card-offset, 0px)) scale(1.02);
         box-shadow: 0 0 25px rgba(244, 67, 54, 0.7);
         background: linear-gradient(45deg, #fff, #ffebee, #fff);
     }
     75% {
-        transform: scale(1.05);
+        transform: translateX(var(--card-offset, 0px)) scale(1.05);
         box-shadow: 0 0 30px rgba(244, 67, 54, 0.8);
         background: linear-gradient(45deg, #ffebee, #ffcdd2, #ffebee);
     }
     100% {
-        transform: scale(1);
+        transform: translateX(var(--card-offset, 0px)) scale(1);
         box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
         background: white;
     }
@@ -309,6 +327,9 @@ h1 {
         0 4px 8px rgba(0, 0, 0, 0.3),
         0 1px 3px rgba(0, 0, 0, 0.2),
         inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    position: absolute;
+    top: 0;
+    left: 0;
 }
 
 .card.burned:hover {
@@ -323,11 +344,22 @@ h1 {
     font-size: 0.9rem;
     font-weight: 900;
     text-align: center;
-    margin-top: 50%;
+    margin-top: 25%;
     transform: translateY(-50%);
     color: #aaa;
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
     letter-spacing: 1px;
+}
+
+.skull-crossbones {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 2.5rem;
+    color: #666;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+    z-index: 1;
 }
 
 /* Card corner elements */
@@ -742,6 +774,68 @@ footer {
 
 #new-game-btn:hover {
     background: #45a049;
+}
+
+/* Fire animation for when the final stack is burned */
+@keyframes burnStack {
+    0% {
+        transform: translateX(var(--card-offset, 0px)) scale(1);
+        filter: brightness(1) saturate(1);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    }
+    25% {
+        transform: translateX(var(--card-offset, 0px)) scale(1.05);
+        filter: brightness(1.2) saturate(1.5) hue-rotate(0deg);
+        box-shadow: 0 0 20px rgba(255, 69, 0, 0.8), 0 0 40px rgba(255, 140, 0, 0.6);
+    }
+    50% {
+        transform: translateX(var(--card-offset, 0px)) scale(1.1);
+        filter: brightness(1.5) saturate(2) hue-rotate(0deg);
+        box-shadow: 0 0 30px rgba(255, 69, 0, 1), 0 0 60px rgba(255, 140, 0, 0.8);
+    }
+    75% {
+        transform: translateX(var(--card-offset, 0px)) scale(1.05);
+        filter: brightness(1.3) saturate(1.8) hue-rotate(0deg);
+        box-shadow: 0 0 25px rgba(255, 69, 0, 0.9), 0 0 50px rgba(255, 140, 0, 0.7);
+    }
+    100% {
+        transform: translateX(var(--card-offset, 0px)) scale(1);
+        filter: brightness(0.8) saturate(0.5) hue-rotate(0deg);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    }
+}
+
+.card.burning {
+    animation: burnStack 3s ease-in-out forwards;
+    background: linear-gradient(145deg, #ff4500, #ff8c00);
+    border-color: #ff4500;
+}
+
+/* Fire particle effects */
+.fire-particle {
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    background: radial-gradient(circle, #ff4500, #ff8c00, transparent);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 1000;
+    animation: fireParticle 2s ease-out forwards;
+}
+
+@keyframes fireParticle {
+    0% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+    50% {
+        opacity: 0.8;
+        transform: translateY(-20px) scale(1.2);
+    }
+    100% {
+        opacity: 0;
+        transform: translateY(-40px) scale(0.5);
+    }
 }
 
 @media (max-width: 768px) {
