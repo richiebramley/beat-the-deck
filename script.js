@@ -89,6 +89,7 @@ class Game {
         this.sneakPeakUsed = false; // Track if Sneak Peak power-up has been used
         this.firstCardPlaced = false; // Track if first card has been successfully placed
         this.jokersDrawn = 0; // Track total jokers that have been drawn from deck
+        this.stackToBurn = null; // Track which stack should be burned for incorrect guesses
         
         this.initializeGame();
         this.bindEvents();
@@ -232,8 +233,8 @@ class Game {
         // Add offset for stacked cards (right and down)
         if (cardIndex > 0) {
             // Use temporary offset if Sneak Peak power-up is active
-            const xOffset = cardIndex * (this.tempXOffset || 6.75); // 6.75px or 20.25px if power-up active (3x for dramatic effect)
-            const yOffset = cardIndex * (this.tempYOffset || 6); // 6px or 18px if power-up active (3x for dramatic effect)
+            const xOffset = cardIndex * (this.tempXOffset || 4); // 6.75px or 20.25px if power-up active (3x for dramatic effect)
+            const yOffset = cardIndex * (this.tempYOffset || 3.5); // 6px or 18px if power-up active (3x for dramatic effect)
             cardDiv.style.transform = `translate(${xOffset}px, ${yOffset}px)`;
             cardDiv.style.zIndex = cardIndex; // Ensure proper layering
             
@@ -339,9 +340,17 @@ class Game {
     }
 
     selectCard(stackIndex) {
-        if (this.gameState !== 'selecting' && this.gameState !== 'guessing') return;
+        if (this.gameState === 'game-over') return;
         if (this.faceUpStacks[stackIndex] === 'burned') return; // Burned stack
         if (this.faceUpStacks[stackIndex].length === 0) return; // Empty stack
+
+        // If we're showing a result (animation playing), allow selecting a new stack
+        if (this.gameState === 'showing-result') {
+            // Just change the selected stack, keep the animation playing
+            this.selectedStackIndex = stackIndex;
+            this.renderFaceUpCards();
+            return;
+        }
 
         // If already selecting a different stack, allow changing selection
         if (this.gameState === 'guessing' && this.selectedStackIndex !== stackIndex) {
@@ -414,7 +423,7 @@ class Game {
         // Animate to increased offset over 0.5 seconds (2x base + 50% additional = 3x total)
         this.animateOffsetChange(originalXOffset, originalYOffset, originalXOffset * 3, originalYOffset * 3, 500);
         
-        // Return to original offset after 3 seconds
+        // Return to original offset after 5 seconds
         setTimeout(() => {
             this.animateOffsetChange(originalXOffset * 3, originalYOffset * 3, originalXOffset, originalYOffset, 500);
             
@@ -435,7 +444,7 @@ class Game {
                 // Double-check that offsets are reset by logging (for debugging)
                 console.log('Sneak Peak power-up ended - offsets reset to:', this.tempXOffset, this.tempYOffset);
             }, 500);
-        }, 3000);
+        }, 5000);
     }
     
     animateOffsetChange(startX, startY, endX, endY, duration) {
@@ -484,7 +493,7 @@ class Game {
         const sneakPeakBtn = document.getElementById('sneak-peak-btn');
         if (!sneakPeakBtn) return;
         
-        let countdown = 3;
+        let countdown = 5;
         
         // Update button text immediately
         sneakPeakBtn.textContent = countdown;
@@ -658,6 +667,8 @@ class Game {
             // Card stays on the stack, continue after a brief pause
             setTimeout(() => this.continueAfterCorrectGuess(), 1000);
         } else {
+            // Store the stack index that should be burned (the one that had the incorrect guess)
+            this.stackToBurn = this.selectedStackIndex;
             // Show the card for 2 seconds, then burn the stack
             setTimeout(() => this.burnStack(), 2000);
         }
@@ -696,17 +707,23 @@ class Game {
             }
         }
         
-        this.selectedStackIndex = null;
-        this.gameState = 'selecting';
+        // If a new stack was selected during the animation, keep it selected
+        if (this.selectedStackIndex !== null) {
+            this.gameState = 'guessing';
+            this.showGameControls();
+        } else {
+            this.gameState = 'selecting';
+        }
+        
         this.lastDrawnCard = null; // Clear the drawn card reference
         this.lastGuessResult = null; // Clear the guess result
-        this.renderFaceUpCards(); // Re-render to remove selected state
+        this.renderFaceUpCards(); // Re-render to show current selection state
         this.updateGameInfo();
     }
 
     burnStack() {
-        // Mark the stack as burned but keep it visible
-        this.faceUpStacks[this.selectedStackIndex] = 'burned';
+        // Mark the stack as burned but keep it visible (use the stored stack index, not the current selection)
+        this.faceUpStacks[this.stackToBurn] = 'burned';
         this.renderFaceUpCards();
         
         // Check if all stacks are burned
@@ -724,10 +741,17 @@ class Game {
             return;
         }
         
-        this.selectedStackIndex = null;
-        this.gameState = 'selecting';
+        // If a new stack was selected during the animation, keep it selected
+        if (this.selectedStackIndex !== null) {
+            this.gameState = 'guessing';
+            this.showGameControls();
+        } else {
+            this.gameState = 'selecting';
+        }
+        
         this.lastDrawnCard = null; // Clear the drawn card reference
         this.lastGuessResult = null; // Clear the guess result
+        this.stackToBurn = null; // Clear the stored stack to burn
         this.updateGameInfo();
     }
 
@@ -866,6 +890,7 @@ class Game {
         this.sneakPeakUsed = false; // Reset Sneak Peak power-up
         this.firstCardPlaced = false; // Reset first card placed flag
         this.jokersDrawn = 0; // Reset jokers drawn counter
+        this.stackToBurn = null; // Reset stack to burn
         this.tempXOffset = null; // Reset temporary offset
         this.tempYOffset = null; // Reset temporary offset
         
