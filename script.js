@@ -1029,7 +1029,11 @@ class Game {
         } else {
             this.elements.gameOverTitle.textContent = 'Oh No!';
             this.elements.gameOverTitle.style.color = '#f44336';
-            this.elements.gameOverMessage.textContent = `${remainingCards} cards were still remaining. Better luck next time!`;
+            if (remainingCards === 0) {
+                this.elements.gameOverMessage.textContent = 'You used your final card but were unable to Beat The Deck! Better luck next time!';
+            } else {
+                this.elements.gameOverMessage.textContent = `${remainingCards} cards were still remaining. Better luck next time!`;
+            }
         }
         
         this.elements.gameOver.style.display = 'flex';
