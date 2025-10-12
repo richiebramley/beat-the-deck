@@ -1,3 +1,116 @@
+// User Management Service - Handle user names and persistence
+class UserService {
+    constructor() {
+        this.currentUser = this.getOrCreateUser();
+    }
+
+    getOrCreateUser() {
+        let user = localStorage.getItem('beatTheDeckUser');
+        if (!user) {
+            user = {
+                id: this.generateUserId(),
+                name: this.generateRandomName(),
+                createdAt: new Date().toISOString()
+            };
+            localStorage.setItem('beatTheDeckUser', JSON.stringify(user));
+        } else {
+            user = JSON.parse(user);
+        }
+        return user;
+    }
+
+    generateUserId() {
+        return 'user_' + Math.random().toString(36).substr(2, 9);
+    }
+
+    generateRandomName() {
+        const adjectives = ['Swift', 'Bold', 'Clever', 'Lucky', 'Sharp', 'Quick', 'Bright', 'Wise', 'Brave', 'Smart'];
+        const nouns = ['Player', 'Gamer', 'Champion', 'Master', 'Hero', 'Ace', 'Star', 'Legend', 'Pro', 'Wizard'];
+        const adjective = adjectives[Math.floor(Math.random() * adjectives.length)];
+        const noun = nouns[Math.floor(Math.random() * nouns.length)];
+        return `${adjective}${noun}${Math.floor(Math.random() * 999) + 1}`;
+    }
+
+    updateUserName(newName) {
+        if (newName && newName.trim().length > 0 && newName.trim().length <= 20) {
+            this.currentUser.name = newName.trim();
+            localStorage.setItem('beatTheDeckUser', JSON.stringify(this.currentUser));
+            return true;
+        }
+        return false;
+    }
+
+    getUserName() {
+        return this.currentUser.name;
+    }
+
+    getUserId() {
+        return this.currentUser.id;
+    }
+}
+
+// Leaderboard Service - Handle game records and leaderboard
+class LeaderboardService {
+    constructor() {
+        this.records = this.loadRecords();
+    }
+
+    loadRecords() {
+        const records = localStorage.getItem('beatTheDeckLeaderboard');
+        return records ? JSON.parse(records) : [];
+    }
+
+    saveRecords() {
+        localStorage.setItem('beatTheDeckLeaderboard', JSON.stringify(this.records));
+    }
+
+    addRecord(userId, userName, stacksRemaining, longestStreak, gameWon, timestamp = new Date().toISOString()) {
+        const record = {
+            id: this.generateRecordId(),
+            userId: userId,
+            userName: userName,
+            stacksRemaining: stacksRemaining,
+            longestStreak: longestStreak,
+            gameWon: gameWon,
+            timestamp: timestamp,
+            cardsUsed: 52 - stacksRemaining
+        };
+        
+        this.records.unshift(record); // Add to beginning for newest first
+        
+        // Keep only last 100 records to prevent localStorage bloat
+        if (this.records.length > 100) {
+            this.records = this.records.slice(0, 100);
+        }
+        
+        this.saveRecords();
+        return record;
+    }
+
+    generateRecordId() {
+        return 'record_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5);
+    }
+
+    getRecords() {
+        return [...this.records]; // Return copy
+    }
+
+    getUserRecords(userId) {
+        return this.records.filter(record => record.userId === userId);
+    }
+
+    getTopRecords(limit = 10) {
+        // Sort by: won games first, then by lowest stacks remaining, then by highest streak
+        return [...this.records]
+            .sort((a, b) => {
+                if (a.gameWon !== b.gameWon) return b.gameWon - a.gameWon; // Wins first
+                if (a.gameWon) return b.stacksRemaining - a.stacksRemaining; // Fewer remaining stacks first for wins
+                return b.longestStreak - a.longestStreak; // Higher streak first for losses
+            })
+            .slice(0, limit);
+    }
+}
+
 // Analytics Service - Centralized tracking for all game events
 class AnalyticsService {
     static track(eventName, params) {
@@ -152,6 +265,10 @@ class Game {
         this.currentStreak = 0; // Track consecutive successful card placements
         this.longestStreak = 0; // Track the highest streak achieved during this game
         
+        // Initialize services
+        this.userService = new UserService();
+        this.leaderboardService = new LeaderboardService();
+        
         // Cache frequently accessed DOM elements
         this.elements = {
             cardsRemaining: document.getElementById('cards-remaining'),
@@ -167,12 +284,27 @@ class Game {
             newGameBtn: document.getElementById('new-game-btn'),
             menuOverlay: document.getElementById('menu-overlay'),
             hamburgerMenu: document.getElementById('hamburger-menu'),
-            closeMenu: document.getElementById('close-menu')
+            closeMenu: document.getElementById('close-menu'),
+            leaderboardBtn: document.getElementById('leaderboard-btn'),
+            leaderboardOverlay: document.getElementById('leaderboard-overlay'),
+            closeLeaderboard: document.getElementById('close-leaderboard'),
+            currentUserName: document.getElementById('current-user-name'),
+            editNameBtn: document.getElementById('edit-name-btn'),
+            nameEditModal: document.getElementById('name-edit-modal'),
+            closeNameEdit: document.getElementById('close-name-edit'),
+            nameInput: document.getElementById('name-input'),
+            cancelNameBtn: document.getElementById('cancel-name-btn'),
+            saveNameBtn: document.getElementById('save-name-btn'),
+            leaderboardList: document.getElementById('leaderboard-list'),
+            allRecordsTab: document.getElementById('all-records-tab'),
+            topPlayersTab: document.getElementById('top-players-tab'),
+            myRecordsTab: document.getElementById('my-records-tab')
         };
         
         
         this.initializeGame();
         this.bindEvents();
+        this.initializeLeaderboard();
     }
 
     initializeGame() {
@@ -237,6 +369,9 @@ class Game {
         
         // Bind hamburger menu events
         this.bindMenuEvents();
+        
+        // Bind leaderboard events
+        this.bindLeaderboardEvents();
     }
 
     bindMenuEvents() {
@@ -292,6 +427,181 @@ class Game {
         // Add new listener
         this.menuKeyHandler = handleKeyPress;
         document.addEventListener('keydown', this.menuKeyHandler);
+    }
+
+    initializeLeaderboard() {
+        // Update current user name display
+        this.elements.currentUserName.textContent = this.userService.getUserName();
+        
+        // Load initial records
+        this.loadLeaderboardRecords('all');
+    }
+
+    bindLeaderboardEvents() {
+        // Leaderboard button
+        this.elements.leaderboardBtn.addEventListener('click', () => {
+            this.openLeaderboard();
+        });
+
+        // Close leaderboard
+        this.elements.closeLeaderboard.addEventListener('click', () => {
+            this.closeLeaderboard();
+        });
+
+        // Edit name button
+        this.elements.editNameBtn.addEventListener('click', () => {
+            this.openNameEditor();
+        });
+
+        // Name editor events
+        this.elements.closeNameEdit.addEventListener('click', () => {
+            this.closeNameEditor();
+        });
+
+        this.elements.cancelNameBtn.addEventListener('click', () => {
+            this.closeNameEditor();
+        });
+
+        this.elements.saveNameBtn.addEventListener('click', () => {
+            this.saveUserName();
+        });
+
+        // Tab switching
+        this.elements.allRecordsTab.addEventListener('click', () => {
+            this.switchLeaderboardTab('all');
+        });
+
+        this.elements.topPlayersTab.addEventListener('click', () => {
+            this.switchLeaderboardTab('top');
+        });
+
+        this.elements.myRecordsTab.addEventListener('click', () => {
+            this.switchLeaderboardTab('my');
+        });
+
+        // Click outside to close
+        this.elements.leaderboardOverlay.addEventListener('click', (e) => {
+            if (e.target === this.elements.leaderboardOverlay) {
+                this.closeLeaderboard();
+            }
+        });
+
+        this.elements.nameEditModal.addEventListener('click', (e) => {
+            if (e.target === this.elements.nameEditModal) {
+                this.closeNameEditor();
+            }
+        });
+    }
+
+    openLeaderboard() {
+        this.elements.leaderboardOverlay.style.display = 'flex';
+        setTimeout(() => {
+            this.elements.leaderboardOverlay.classList.add('show');
+        }, 10);
+        this.loadLeaderboardRecords('all');
+    }
+
+    closeLeaderboard() {
+        this.elements.leaderboardOverlay.classList.remove('show');
+        setTimeout(() => {
+            this.elements.leaderboardOverlay.style.display = 'none';
+        }, 400);
+    }
+
+    openNameEditor() {
+        this.elements.nameInput.value = this.userService.getUserName();
+        this.elements.nameEditModal.classList.add('show');
+        this.elements.nameInput.focus();
+        this.elements.nameInput.select();
+    }
+
+    closeNameEditor() {
+        this.elements.nameEditModal.classList.remove('show');
+    }
+
+    saveUserName() {
+        const newName = this.elements.nameInput.value.trim();
+        if (this.userService.updateUserName(newName)) {
+            this.elements.currentUserName.textContent = newName;
+            this.closeNameEditor();
+            // Refresh leaderboard to show updated name
+            this.loadLeaderboardRecords();
+        } else {
+            alert('Please enter a valid name (1-20 characters)');
+        }
+    }
+
+    switchLeaderboardTab(tab) {
+        // Update active tab
+        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+        event.target.classList.add('active');
+        
+        this.loadLeaderboardRecords(tab);
+    }
+
+    loadLeaderboardRecords(tab = 'all') {
+        let records = [];
+        
+        switch(tab) {
+            case 'all':
+                records = this.leaderboardService.getRecords();
+                break;
+            case 'top':
+                records = this.leaderboardService.getTopRecords(20);
+                break;
+            case 'my':
+                records = this.leaderboardService.getUserRecords(this.userService.getUserId());
+                break;
+        }
+
+        this.renderLeaderboardRecords(records, tab);
+    }
+
+    renderLeaderboardRecords(records, tab) {
+        const container = this.elements.leaderboardList;
+        container.innerHTML = '';
+
+        if (records.length === 0) {
+            container.innerHTML = '<div class="no-records">No records found. Play a game to get started!</div>';
+            return;
+        }
+
+        records.forEach((record, index) => {
+            const recordElement = this.createRecordElement(record, index + 1, tab);
+            container.appendChild(recordElement);
+        });
+    }
+
+    createRecordElement(record, rank, tab) {
+        const div = document.createElement('div');
+        div.className = `record-item ${record.gameWon ? 'win' : 'loss'}`;
+
+        const rankClass = rank <= 3 ? 'top-3' : '';
+        const date = new Date(record.timestamp).toLocaleDateString();
+        
+        div.innerHTML = `
+            <div class="record-rank ${rankClass}">${rank}</div>
+            <div class="record-info">
+                <div class="record-name">${record.userName}</div>
+                <div class="record-stats">
+                    <div class="record-stat">
+                        <div class="record-stat-label">Stacks</div>
+                        <div class="record-stat-value ${record.gameWon ? 'win' : 'loss'}">${record.stacksRemaining}</div>
+                    </div>
+                    <div class="record-stat">
+                        <div class="record-stat-label">Streak</div>
+                        <div class="record-stat-value">${record.longestStreak}</div>
+                    </div>
+                    <div class="record-stat">
+                        <div class="record-stat-label">Cards</div>
+                        <div class="record-stat-value">${record.cardsUsed}</div>
+                    </div>
+                </div>
+                <div class="record-date">${date}</div>
+            </div>
+        `;
+
+        return div;
     }
 
     renderFaceUpCards() {
@@ -1080,6 +1390,15 @@ class Game {
         
         // Track game outcome
         AnalyticsService.trackGameEnd(won, remainingCards);
+        
+        // Record in leaderboard
+        this.leaderboardService.addRecord(
+            this.userService.getUserId(),
+            this.userService.getUserName(),
+            remainingCards,
+            this.longestStreak,
+            won
+        );
         
         if (won) {
             this.elements.gameOverTitle.textContent = '🎉 Congratulations!';
