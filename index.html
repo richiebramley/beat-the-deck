@@ -111,14 +111,11 @@
                         </div>
                     </div>
                 </div>
-            <div class="header-right">
-                <button class="leaderboard-btn" id="leaderboard-btn" aria-label="Open leaderboard">
-                    <span class="trophy-icon">🏆</span>
-                </button>
-                <button class="question-menu" id="hamburger-menu" aria-label="Open menu" aria-expanded="false">
-                    <span class="question-mark">?</span>
-                </button>
-            </div>
+    <div class="header-right">
+        <button class="question-menu" id="hamburger-menu" aria-label="Open menu" aria-expanded="false">
+            <span class="question-mark">?</span>
+        </button>
+    </div>
             </div>
         </header>
 
@@ -135,10 +132,9 @@
             <div class="game-over-content">
                 <h2 id="game-over-title"></h2>
                 <p id="game-over-message"></p>
-                <div class="game-over-buttons">
-                    <button id="view-leaderboard-btn" aria-label="View leaderboard">View Leaderboard</button>
-                    <button id="new-game-btn" aria-label="Start a new game">New Game</button>
-                </div>
+            <div class="game-over-buttons">
+                <button id="new-game-btn" aria-label="Start a new game">New Game</button>
+            </div>
             </div>
         </div>
     </div>
@@ -192,52 +188,6 @@
         </div>
     </div>
 
-    <!-- Leaderboard Overlay -->
-    <div class="leaderboard-overlay" id="leaderboard-overlay">
-        <div class="leaderboard-content">
-            <div class="leaderboard-header">
-                <h2>Leaderboard</h2>
-                <button class="close-leaderboard" id="close-leaderboard" aria-label="Close leaderboard">×</button>
-            </div>
-            
-            <div class="leaderboard-body">
-                <div class="user-profile-section">
-                    <div class="user-info">
-                        <span class="user-label">Playing as:</span>
-                        <span class="user-name" id="current-user-name">Loading...</span>
-                    </div>
-                    <button class="edit-name-btn" id="edit-name-btn">Edit Name</button>
-                </div>
-
-                <div class="leaderboard-tabs">
-                    <button class="tab-btn active" id="all-records-tab">All Records</button>
-                    <button class="tab-btn" id="top-players-tab">Top Players</button>
-                    <button class="tab-btn" id="my-records-tab">My Records</button>
-                </div>
-
-                <div class="leaderboard-list" id="leaderboard-list">
-                    <!-- Records will be populated here -->
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Name Edit Modal -->
-    <div class="name-edit-modal" id="name-edit-modal">
-        <div class="name-edit-content">
-            <div class="name-edit-header">
-                <h3>Edit Your Name</h3>
-                <button class="close-name-edit" id="close-name-edit" aria-label="Close name editor">×</button>
-            </div>
-            <div class="name-edit-body">
-                <input type="text" id="name-input" placeholder="Enter your name" maxlength="20">
-                <div class="name-edit-buttons">
-                    <button class="cancel-name-btn" id="cancel-name-btn">Cancel</button>
-                    <button class="save-name-btn" id="save-name-btn">Save</button>
-                </div>
-            </div>
-        </div>
-    </div>
 
 
 

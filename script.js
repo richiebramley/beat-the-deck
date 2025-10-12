@@ -423,7 +423,7 @@ class Game {
         
         // Initialize services
         this.userService = new UserService();
-        this.leaderboardService = new LeaderboardService();
+        // this.leaderboardService = new LeaderboardService(); // Disabled
         
         // Cache frequently accessed DOM elements
         this.elements = {
@@ -438,30 +438,30 @@ class Game {
             gameOverTitle: document.getElementById('game-over-title'),
             gameOverMessage: document.getElementById('game-over-message'),
             newGameBtn: document.getElementById('new-game-btn'),
-            viewLeaderboardBtn: document.getElementById('view-leaderboard-btn'),
+            // viewLeaderboardBtn: document.getElementById('view-leaderboard-btn'), // Disabled
             menuOverlay: document.getElementById('menu-overlay'),
             hamburgerMenu: document.getElementById('hamburger-menu'),
-            closeMenu: document.getElementById('close-menu'),
-            leaderboardBtn: document.getElementById('leaderboard-btn'),
-            leaderboardOverlay: document.getElementById('leaderboard-overlay'),
-            closeLeaderboard: document.getElementById('close-leaderboard'),
-            currentUserName: document.getElementById('current-user-name'),
-            editNameBtn: document.getElementById('edit-name-btn'),
-            nameEditModal: document.getElementById('name-edit-modal'),
-            closeNameEdit: document.getElementById('close-name-edit'),
-            nameInput: document.getElementById('name-input'),
-            cancelNameBtn: document.getElementById('cancel-name-btn'),
-            saveNameBtn: document.getElementById('save-name-btn'),
-            leaderboardList: document.getElementById('leaderboard-list'),
-            allRecordsTab: document.getElementById('all-records-tab'),
-            topPlayersTab: document.getElementById('top-players-tab'),
-            myRecordsTab: document.getElementById('my-records-tab')
+            closeMenu: document.getElementById('close-menu')
+            // leaderboardBtn: document.getElementById('leaderboard-btn'), // Disabled
+            // leaderboardOverlay: document.getElementById('leaderboard-overlay'), // Disabled
+            // closeLeaderboard: document.getElementById('close-leaderboard'), // Disabled
+            // currentUserName: document.getElementById('current-user-name'), // Disabled
+            // editNameBtn: document.getElementById('edit-name-btn'), // Disabled
+            // nameEditModal: document.getElementById('name-edit-modal'), // Disabled
+            // closeNameEdit: document.getElementById('close-name-edit'), // Disabled
+            // nameInput: document.getElementById('name-input'), // Disabled
+            // cancelNameBtn: document.getElementById('cancel-name-btn'), // Disabled
+            // saveNameBtn: document.getElementById('save-name-btn'), // Disabled
+            // leaderboardList: document.getElementById('leaderboard-list'), // Disabled
+            // allRecordsTab: document.getElementById('all-records-tab'), // Disabled
+            // topPlayersTab: document.getElementById('top-players-tab'), // Disabled
+            // myRecordsTab: document.getElementById('my-records-tab') // Disabled
         };
         
         
         this.initializeGame();
         this.bindEvents();
-        this.initializeLeaderboard();
+        // this.initializeLeaderboard(); // Disabled
     }
 
     initializeGame() {
@@ -510,8 +510,8 @@ class Game {
                 this.startNewGame();
                 // Track new game
                 AnalyticsService.trackGameStart();
-            } else if (e.target && e.target.id === 'view-leaderboard-btn') {
-                this.closeGameOverAndOpenLeaderboard();
+            // } else if (e.target && e.target.id === 'view-leaderboard-btn') { // Disabled
+            //     this.closeGameOverAndOpenLeaderboard();
             } else if (e.target && e.target.id === 'sneak-peak-btn') {
                 this.useSneakPeak();
             } else if (e.target && e.target.id === 'peek-next-btn') {
@@ -530,7 +530,7 @@ class Game {
         this.bindMenuEvents();
         
         // Bind leaderboard events
-        this.bindLeaderboardEvents();
+        // this.bindLeaderboardEvents(); // Disabled
     }
 
     bindMenuEvents() {
@@ -1605,14 +1605,14 @@ class Game {
         const activeStacksRemaining = this.faceUpStacks.filter(stack => stack !== 'burned').length;
         const cardsDealt = 54 - remainingCards; // 52 regular cards + 2 jokers = 54 total
         
-        this.leaderboardService.addRecord(
-            this.userService.getUserId(),
-            this.userService.getUserName(),
-            activeStacksRemaining,
-            this.longestStreak,
-            won,
-            cardsDealt
-        );
+        // this.leaderboardService.addRecord( // Disabled
+        //     this.userService.getUserId(),
+        //     this.userService.getUserName(),
+        //     activeStacksRemaining,
+        //     this.longestStreak,
+        //     won,
+        //     cardsDealt
+        // );
         
         if (won) {
             this.elements.gameOverTitle.textContent = '🎉 Congratulations!';
