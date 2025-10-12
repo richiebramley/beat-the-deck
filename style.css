@@ -763,6 +763,9 @@ h1 {
     right: 20px;
     top: 50%;
     transform: translateY(-50%);
+    display: flex;
+    align-items: center;
+    gap: 10px;
 }
 
 .scores-section {
@@ -1810,6 +1813,9 @@ h1 {
         transform: none;
         right: auto;
         top: auto;
+        display: flex;
+        align-items: center;
+        gap: 10px;
     }
     
     .header-middle {
