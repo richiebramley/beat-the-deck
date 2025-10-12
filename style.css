@@ -766,7 +766,7 @@ h1 {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 0;
+    gap: 1px;
 }
 
 .scores-section {
@@ -1818,7 +1818,7 @@ h1 {
         display: flex;
         flex-direction: column;
         align-items: center;
-        gap: 0;
+        gap: 1px;
     }
     
     .header-middle {
