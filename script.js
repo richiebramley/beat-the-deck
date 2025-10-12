@@ -160,16 +160,40 @@ class LeaderboardService {
     }
 
     checkDataVersion() {
-        const LEADERBOARD_VERSION = '2.0'; // Increment this when data structure changes
+        const LEADERBOARD_VERSION = '2.1'; // Increment this when data structure changes
         const storedVersion = localStorage.getItem('beatTheDeckLeaderboardVersion');
         
         if (!storedVersion || storedVersion !== LEADERBOARD_VERSION) {
-            // Clear old/invalid data
-            localStorage.removeItem('beatTheDeckLeaderboard');
-            this.records = [];
-            localStorage.setItem('beatTheDeckLeaderboardVersion', LEADERBOARD_VERSION);
-            console.log('Leaderboard data cleared due to version mismatch');
+            // Migrate existing data if coming from version 2.0
+            if (storedVersion === '2.0') {
+                this.migrateCardCountData();
+                localStorage.setItem('beatTheDeckLeaderboardVersion', LEADERBOARD_VERSION);
+                console.log('Leaderboard data migrated from version 2.0 to 2.1');
+            } else {
+                // Clear old/invalid data for other versions
+                localStorage.removeItem('beatTheDeckLeaderboard');
+                this.records = [];
+                localStorage.setItem('beatTheDeckLeaderboardVersion', LEADERBOARD_VERSION);
+                console.log('Leaderboard data cleared due to version mismatch');
+            }
         }
+    }
+
+    migrateCardCountData() {
+        // Update existing records: if gameWon and cardsUsed is 52, change to 54
+        this.records = this.records.map(record => {
+            if (record.gameWon && record.cardsUsed === 52) {
+                return {
+                    ...record,
+                    cardsUsed: 54
+                };
+            }
+            return record;
+        });
+        
+        // Save the migrated data
+        this.saveRecords();
+        console.log('Migrated winning games from 52 to 54 cards dealt');
     }
 
     addRecord(userId, userName, stacksRemaining, longestStreak, gameWon, cardsDealt, timestamp = new Date().toISOString()) {
@@ -1222,8 +1246,8 @@ class Game {
             event_label: 'win_celebration'
         });
         
-        // Create 52 celebration cards that fly in different directions
-        for (let i = 0; i < 52; i++) {
+        // Create 54 celebration cards that fly in different directions
+        for (let i = 0; i < 54; i++) {
             setTimeout(() => {
                 this.createCelebrationCard();
             }, i * 100); // Stagger the creation for a wave effect
@@ -1579,7 +1603,7 @@ class Game {
         // Record in leaderboard
         // Calculate active stacks remaining (9 total stacks minus burned stacks)
         const activeStacksRemaining = this.faceUpStacks.filter(stack => stack !== 'burned').length;
-        const cardsDealt = 52 - remainingCards;
+        const cardsDealt = 54 - remainingCards; // 52 regular cards + 2 jokers = 54 total
         
         this.leaderboardService.addRecord(
             this.userService.getUserId(),
@@ -1598,7 +1622,7 @@ class Game {
                     🏆 You beat the deck! 🏆
                 </div>
                 <div style="margin-bottom: 10px;">
-                    All 52 cards successfully placed!
+                    All 54 cards successfully placed!
                 </div>
                 <div style="font-size: 1.1rem; color: #666;">
                     Your longest streak was <strong style="color: #4caf50;">${this.longestStreak}</strong>
@@ -1606,7 +1630,7 @@ class Game {
             `;
         } else {
             // Different messaging based on performance
-            const streakPercentage = Math.round((this.longestStreak / 52) * 100);
+            const streakPercentage = Math.round((this.longestStreak / 54) * 100);
             
             if (this.longestStreak >= 20) {
                 this.elements.gameOverTitle.textContent = '🎯 So Close!';
