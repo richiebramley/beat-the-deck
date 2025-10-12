@@ -240,25 +240,58 @@ class Game {
     }
 
     bindMenuEvents() {
-        // Open menu
+        // Open menu with animation
         this.elements.hamburgerMenu.addEventListener('click', () => {
-            this.elements.menuOverlay.classList.add('active');
+            this.elements.menuOverlay.style.display = 'flex';
+            setTimeout(() => {
+                this.elements.menuOverlay.classList.add('active');
+            }, 10);
             this.elements.hamburgerMenu.setAttribute('aria-expanded', 'true');
+            
+            // Add keyboard support for menu
+            this.addMenuKeyboardSupport();
         });
 
-        // Close menu
+        // Close menu with animation
         this.elements.closeMenu.addEventListener('click', () => {
-            this.elements.menuOverlay.classList.remove('active');
-            this.elements.hamburgerMenu.setAttribute('aria-expanded', 'false');
+            this.closeMenu();
         });
 
         // Close menu when clicking outside
         this.elements.menuOverlay.addEventListener('click', (e) => {
             if (e.target === this.elements.menuOverlay) {
-                this.elements.menuOverlay.classList.remove('active');
-                this.elements.hamburgerMenu.setAttribute('aria-expanded', 'false');
+                this.closeMenu();
             }
         });
+    }
+
+    closeMenu() {
+        this.elements.menuOverlay.classList.remove('active');
+        setTimeout(() => {
+            this.elements.menuOverlay.style.display = 'none';
+            // Clean up keyboard listener
+            if (this.menuKeyHandler) {
+                document.removeEventListener('keydown', this.menuKeyHandler);
+                this.menuKeyHandler = null;
+            }
+        }, 400);
+        this.elements.hamburgerMenu.setAttribute('aria-expanded', 'false');
+    }
+
+    addMenuKeyboardSupport() {
+        const handleKeyPress = (e) => {
+            if (this.elements.menuOverlay.classList.contains('active') && e.key === 'Escape') {
+                e.preventDefault();
+                this.closeMenu();
+            }
+        };
+        
+        // Remove any existing listener
+        document.removeEventListener('keydown', this.menuKeyHandler);
+        
+        // Add new listener
+        this.menuKeyHandler = handleKeyPress;
+        document.addEventListener('keydown', this.menuKeyHandler);
     }
 
     renderFaceUpCards() {
