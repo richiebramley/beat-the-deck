@@ -766,7 +766,7 @@ h1 {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 2px;
+    gap: 0;
 }
 
 .scores-section {
@@ -830,14 +830,14 @@ h1 {
     background: none;
     border: none;
     cursor: pointer;
-    padding: 8px;
+    padding: 0;
     display: flex;
     align-items: center;
     justify-content: center;
     border-radius: 4px;
     transition: background-color 0.3s ease;
-    width: 40px;
-    height: 40px;
+    width: 50px;
+    height: 25px;
 }
 
 .question-menu:hover {
@@ -1234,13 +1234,14 @@ h1 {
     border: none;
     border-radius: 50%;
     width: 50px;
-    height: 50px;
+    height: 25px;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
     transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-    margin-right: 10px;
+    margin: 0;
+    padding: 0;
 }
 
 .leaderboard-btn:hover {
@@ -1817,7 +1818,7 @@ h1 {
         display: flex;
         flex-direction: column;
         align-items: center;
-        gap: 2px;
+        gap: 0;
     }
     
     .header-middle {
