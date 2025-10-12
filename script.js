@@ -1081,7 +1081,7 @@ class Game {
                     </div>
                 `;
             } else if (this.longestStreak >= 10) {
-                this.elements.gameOverTitle.textContent = '💪 Good Try!';
+                this.elements.gameOverTitle.textContent = 'Good Try!';
                 this.elements.gameOverTitle.style.color = '#ff9800';
                 this.elements.gameOverMessage.innerHTML = `
                     <div style="margin-bottom: 15px; font-size: 1.4rem; font-weight: 600; color: #f57c00;">
