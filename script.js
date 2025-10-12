@@ -149,14 +149,17 @@ class Game {
         this.firstCardPlaced = false; // Track if first card has been successfully placed
         this.jokersDrawn = 0; // Track total jokers that have been drawn from deck
         this.stackToBurn = null; // Track which stack should be burned for incorrect guesses
+        this.currentStreak = 0; // Track consecutive successful card placements
+        this.longestStreak = 0; // Track the highest streak achieved during this game
         
         // Cache frequently accessed DOM elements
         this.elements = {
             cardsRemaining: document.getElementById('cards-remaining'),
-            activeDecks: document.getElementById('active-decks'),
-            jokerInfo: document.getElementById('joker-info'),
-            sneakPeakBtn: document.getElementById('sneak-peak-btn'),
-            peekNextBtn: document.getElementById('peek-next-btn'),
+            // activeDecks: document.getElementById('active-decks'), // Element removed
+            // jokerInfo: document.getElementById('joker-info'), // Element removed
+            streakCount: document.getElementById('streak-count'),
+            sneakPeakBtn: document.getElementById('sneak-peak-btn'), // "Check Stacks" button
+            peekNextBtn: document.getElementById('peek-next-btn'), // "Sneak Peak" button
             faceUpCards: document.getElementById('face-up-cards'),
             gameOver: document.getElementById('game-over'),
             gameOverTitle: document.getElementById('game-over-title'),
@@ -166,6 +169,7 @@ class Game {
             hamburgerMenu: document.getElementById('hamburger-menu'),
             closeMenu: document.getElementById('close-menu')
         };
+        
         
         this.initializeGame();
         this.bindEvents();
@@ -199,6 +203,7 @@ class Game {
         
         this.renderFaceUpCards();
         this.updateGameInfo();
+        this.updateStreakDisplay();
     }
 
     bindEvents() {
@@ -456,7 +461,7 @@ class Game {
         // Temporarily increase card offset by 100%
         this.temporarilyIncreaseOffset();
         
-        // Disable the button (but don't change text yet - countdown will handle it)
+        // Disable the button and show countdown
         if (this.elements.sneakPeakBtn) {
             this.elements.sneakPeakBtn.disabled = true;
         }
@@ -487,7 +492,7 @@ class Game {
         // Disable the button
         if (this.elements.peekNextBtn) {
             this.elements.peekNextBtn.disabled = true;
-            this.elements.peekNextBtn.textContent = 'Used';
+            this.elements.peekNextBtn.textContent = 'Sneak Peak';
         }
         
         // Track power-up usage
@@ -581,9 +586,9 @@ class Game {
             
             // Remove active class and reset button text after animation
             setTimeout(() => {
-                if (sneakPeakBtn) {
-                    sneakPeakBtn.classList.remove('active');
-                    sneakPeakBtn.textContent = 'Used';
+                if (this.elements.sneakPeakBtn) {
+                    this.elements.sneakPeakBtn.classList.remove('active');
+                    this.elements.sneakPeakBtn.textContent = 'Check Stacks';
                 }
                 
                 // Ensure temporary offsets are cleared
@@ -646,16 +651,18 @@ class Game {
         
         let countdown = 5;
         
-        // Update button text immediately
-        this.elements.sneakPeakBtn.textContent = countdown;
+        // Update button text immediately with both text and number
+        this.elements.sneakPeakBtn.textContent = `Check Stacks ${countdown}`;
         
         // Countdown timer
         const countdownInterval = setInterval(() => {
             countdown--;
             if (countdown >= 0) {
-                this.elements.sneakPeakBtn.textContent = countdown;
+                this.elements.sneakPeakBtn.textContent = `Check Stacks ${countdown}`;
             } else {
                 clearInterval(countdownInterval);
+                // Ensure button text is reset to original name after countdown
+                this.elements.sneakPeakBtn.textContent = 'Check Stacks';
             }
         }, 1000);
     }
@@ -816,6 +823,10 @@ class Game {
         this.renderFaceUpCards();
         
         if (isCorrect) {
+            // Increment streak for successful guess
+            this.currentStreak++;
+            this.updateStreakDisplay();
+            
             // Check if this was the final card and player won
             if (this.deck.remainingCards() === 0) {
                 this.triggerCelebration();
@@ -825,6 +836,10 @@ class Game {
             // Card stays on the stack, continue after a brief pause
             setTimeout(() => this.continueAfterCorrectGuess(), 1000);
         } else {
+            // Reset streak to zero for incorrect guess
+            this.currentStreak = 0;
+            this.updateStreakDisplay();
+            
             // Store the stack index that should be burned (the one that had the incorrect guess)
             this.stackToBurn = this.selectedStackIndex;
             // Show the card for 2 seconds, then burn the stack
@@ -994,6 +1009,17 @@ class Game {
 
 
 
+    updateStreakDisplay() {
+        if (this.elements.streakCount) {
+            this.elements.streakCount.textContent = this.currentStreak;
+        }
+        
+        // Update longest streak if current streak is higher
+        if (this.currentStreak > this.longestStreak) {
+            this.longestStreak = this.currentStreak;
+        }
+    }
+
     updateGameInfo() {
         const remainingCards = this.deck.remainingCards();
         this.elements.cardsRemaining.textContent = remainingCards;
@@ -1001,15 +1027,15 @@ class Game {
         // Calculate jokers remaining: total jokers (2) minus jokers drawn
         const jokersRemaining = 2 - this.jokersDrawn;
         
-        // Update active stacks count
+        // Update active stacks count (element removed from HTML)
         const activeStacks = this.faceUpStacks.filter(stack => stack !== 'burned' && stack.length > 0).length;
-        this.elements.activeDecks.textContent = activeStacks;
+        // this.elements.activeDecks.textContent = activeStacks; // Element removed
         
-        // Show Joker count (including zero)
-        if (this.elements.jokerInfo) {
-            this.elements.jokerInfo.textContent = `🃏 ${jokersRemaining} Joker${jokersRemaining !== 1 ? 's' : ''} remaining`;
-            this.elements.jokerInfo.style.display = 'block'; // Always show, even when zero
-        }
+        // Show Joker count (including zero) (element removed from HTML)
+        // if (this.elements.jokerInfo) {
+        //     this.elements.jokerInfo.textContent = `🃏 ${jokersRemaining} Joker${jokersRemaining !== 1 ? 's' : ''} remaining`;
+        //     this.elements.jokerInfo.style.display = 'block'; // Always show, even when zero
+        // }
     }
 
 
@@ -1025,14 +1051,14 @@ class Game {
         if (won) {
             this.elements.gameOverTitle.textContent = 'Congratulations!';
             this.elements.gameOverTitle.style.color = '#4caf50';
-            this.elements.gameOverMessage.textContent = `You beat the deck! All cards have been used.`;
+            this.elements.gameOverMessage.textContent = `You beat the deck! All cards have been used.\nYour longest streak was ${this.longestStreak}`;
         } else {
             this.elements.gameOverTitle.textContent = 'Oh No!';
             this.elements.gameOverTitle.style.color = '#f44336';
             if (remainingCards === 0) {
-                this.elements.gameOverMessage.textContent = 'You used your final card but were unable to Beat The Deck! Better luck next time!';
+                this.elements.gameOverMessage.textContent = `You used your final card but were unable to Beat The Deck! Better luck next time!\nYour longest streak was ${this.longestStreak}`;
             } else {
-                this.elements.gameOverMessage.textContent = `${remainingCards} cards were still remaining. Better luck next time!`;
+                this.elements.gameOverMessage.textContent = `${remainingCards} cards were still remaining. Better luck next time!\nYour longest streak was ${this.longestStreak}`;
             }
         }
         
@@ -1053,6 +1079,8 @@ class Game {
         this.firstCardPlaced = false; // Reset first card placed flag
         this.jokersDrawn = 0; // Reset jokers drawn counter
         this.stackToBurn = null; // Reset stack to burn
+        this.currentStreak = 0; // Reset streak counter
+        this.longestStreak = 0; // Reset longest streak counter
         
         // Track power-ups reset for new game
         AnalyticsService.track('power_ups_reset', {

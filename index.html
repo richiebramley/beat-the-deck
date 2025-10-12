@@ -94,28 +94,27 @@
         <header role="banner">
             <div class="header-content">
                 <div class="header-left">
-                    <!-- Left section - 40px width -->
+                    <h1>Beat the Deck</h1>
                 </div>
                 <div class="header-middle">
-                    <h1>Beat the Deck</h1>
+                    <div class="scores-section">
+                        <div class="cards-remaining score-highlight">Cards Left: <span id="cards-remaining" aria-label="cards remaining">43</span></div>
+                        <div class="streak-count score-highlight">Streak: <span id="streak-count" aria-label="current streak">0</span></div>
+                    </div>
+                </div>
+                <div class="header-center">
+                    <div class="hints-box">
+                        <div class="hints-title">Hints</div>
+                        <div class="hints-buttons">
+                            <button id="sneak-peak-btn" class="power-up-btn">Check Stacks</button>
+                            <button id="peek-next-btn" class="power-up-btn">Sneak Peak</button>
+                        </div>
+                    </div>
                 </div>
                 <div class="header-right">
                     <button class="question-menu" id="hamburger-menu" aria-label="Open menu" aria-expanded="false">
                         <span class="question-mark">?</span>
                     </button>
-                </div>
-            </div>
-            <div class="game-info" role="status" aria-live="polite">
-                <!-- Row 1: Game Counts -->
-                <div class="game-info-row game-counts-row">
-                    <div class="cards-remaining">Cards Left: <span id="cards-remaining" aria-label="cards remaining">43</span></div>
-                    <div class="active-decks">Active Decks: <span id="active-decks" aria-label="active decks">9</span></div>
-                </div>
-                <!-- Row 2: Interactive Elements -->
-                <div class="game-info-row game-actions-row">
-                    <div id="joker-info" class="joker-info" style="display: none;">🃏 2 Jokers remaining</div>
-                    <button id="sneak-peak-btn" class="power-up-btn">Check Stacks</button>
-                    <button id="peek-next-btn" class="power-up-btn">Sneak Peak</button>
                 </div>
             </div>
         </header>
