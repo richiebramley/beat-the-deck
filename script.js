@@ -110,7 +110,7 @@ class LeaderboardService {
         localStorage.setItem('beatTheDeckLeaderboard', JSON.stringify(this.records));
     }
 
-    addRecord(userId, userName, stacksRemaining, longestStreak, gameWon, timestamp = new Date().toISOString()) {
+    addRecord(userId, userName, stacksRemaining, longestStreak, gameWon, cardsDealt, timestamp = new Date().toISOString()) {
         const record = {
             id: this.generateRecordId(),
             userId: userId,
@@ -119,7 +119,7 @@ class LeaderboardService {
             longestStreak: longestStreak,
             gameWon: gameWon,
             timestamp: timestamp,
-            cardsUsed: 52 - stacksRemaining
+            cardsUsed: cardsDealt
         };
         
         this.records.unshift(record); // Add to beginning for newest first
@@ -1466,12 +1466,17 @@ class Game {
         AnalyticsService.trackGameEnd(won, remainingCards);
         
         // Record in leaderboard
+        // Calculate active stacks remaining (9 total stacks minus burned stacks)
+        const activeStacksRemaining = this.faceUpStacks.filter(stack => stack !== 'burned').length;
+        const cardsDealt = 52 - remainingCards;
+        
         this.leaderboardService.addRecord(
             this.userService.getUserId(),
             this.userService.getUserName(),
-            remainingCards,
+            activeStacksRemaining,
             this.longestStreak,
-            won
+            won,
+            cardsDealt
         );
         
         if (won) {
