@@ -643,15 +643,15 @@ class Game {
                 <div class="record-name">${record.userName}</div>
                 <div class="record-stats">
                     <div class="record-stat">
-                        <div class="record-stat-label">Stacks</div>
+                        <div class="record-stat-label">Active Stacks</div>
                         <div class="record-stat-value ${record.gameWon ? 'win' : 'loss'}">${record.stacksRemaining}</div>
                     </div>
                     <div class="record-stat">
-                        <div class="record-stat-label">Streak</div>
+                        <div class="record-stat-label">Longest Streak</div>
                         <div class="record-stat-value">${record.longestStreak}</div>
                     </div>
                     <div class="record-stat">
-                        <div class="record-stat-label">Cards</div>
+                        <div class="record-stat-label">Cards Dealt</div>
                         <div class="record-stat-value">${record.cardsUsed}</div>
                     </div>
                 </div>
