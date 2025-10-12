@@ -99,6 +99,7 @@ class UserService {
 class LeaderboardService {
     constructor() {
         this.records = this.loadRecords();
+        this.checkDataVersion();
     }
 
     loadRecords() {
@@ -108,6 +109,19 @@ class LeaderboardService {
 
     saveRecords() {
         localStorage.setItem('beatTheDeckLeaderboard', JSON.stringify(this.records));
+    }
+
+    checkDataVersion() {
+        const LEADERBOARD_VERSION = '2.0'; // Increment this when data structure changes
+        const storedVersion = localStorage.getItem('beatTheDeckLeaderboardVersion');
+        
+        if (!storedVersion || storedVersion !== LEADERBOARD_VERSION) {
+            // Clear old/invalid data
+            localStorage.removeItem('beatTheDeckLeaderboard');
+            this.records = [];
+            localStorage.setItem('beatTheDeckLeaderboardVersion', LEADERBOARD_VERSION);
+            console.log('Leaderboard data cleared due to version mismatch');
+        }
     }
 
     addRecord(userId, userName, stacksRemaining, longestStreak, gameWon, cardsDealt, timestamp = new Date().toISOString()) {
