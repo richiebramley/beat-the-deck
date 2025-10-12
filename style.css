@@ -941,46 +941,168 @@ h1 {
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.8);
+    background: rgba(0, 0, 0, 0.9);
+    backdrop-filter: blur(15px);
     display: flex;
     justify-content: center;
     align-items: center;
     z-index: 1000;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+}
+
+.game-over.show {
+    opacity: 1;
 }
 
 .game-over-content {
-    background: white;
-    color: black;
-    padding: 40px;
-    border-radius: 12px;
+    background: linear-gradient(145deg, #ffffff, #f8f9fa);
+    color: #333;
+    padding: 50px 40px;
+    border-radius: 25px;
     text-align: center;
-    max-width: 400px;
+    max-width: 450px;
     margin: 20px;
+    transform: scale(0.8) translateY(30px);
+    transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    box-shadow: 
+        0 25px 50px rgba(0, 0, 0, 0.4),
+        0 0 0 1px rgba(255, 255, 255, 0.1);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    position: relative;
+    overflow: hidden;
+}
+
+.game-over-content::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #4caf50, #45a049, #4caf50);
+    background-size: 200% 100%;
+    animation: shimmer 3s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+}
+
+.game-over.show .game-over-content {
+    transform: scale(1) translateY(0);
 }
 
 .game-over-content h2 {
-    margin-bottom: 20px;
-    font-size: 2rem;
+    margin-bottom: 25px;
+    font-size: 3rem;
+    font-weight: 900;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    letter-spacing: -0.02em;
+    position: relative;
 }
 
 .game-over-content p {
-    margin-bottom: 30px;
-    font-size: 1.2rem;
+    margin-bottom: 35px;
+    font-size: 1.3rem;
+    line-height: 1.6;
+    color: #444;
+    font-weight: 500;
 }
 
 #new-game-btn {
-    padding: 15px 30px;
-    background: #4caf50;
+    padding: 18px 35px;
+    background: linear-gradient(145deg, #4caf50, #45a049);
     color: white;
     border: none;
-    border-radius: 8px;
-    font-size: 1.2rem;
+    border-radius: 30px;
+    font-size: 1.3rem;
+    font-weight: 700;
     cursor: pointer;
-    transition: background 0.3s ease;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    position: relative;
+    overflow: hidden;
+}
+
+#new-game-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
 }
 
 #new-game-btn:hover {
-    background: #45a049;
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: 0 10px 30px rgba(76, 175, 80, 0.5);
+}
+
+#new-game-btn:hover::before {
+    left: 100%;
+}
+
+#new-game-btn:active {
+    transform: translateY(-1px) scale(1.02);
+}
+
+/* Additional game-over enhancements */
+.game-over-content .celebration {
+    position: absolute;
+    top: -20px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 4rem;
+    animation: bounce 2s ease-in-out infinite;
+}
+
+@keyframes bounce {
+    0%, 20%, 50%, 80%, 100% {
+        transform: translateX(-50%) translateY(0);
+    }
+    40% {
+        transform: translateX(-50%) translateY(-10px);
+    }
+    60% {
+        transform: translateX(-50%) translateY(-5px);
+    }
+}
+
+.game-over-content .streak-highlight {
+    background: linear-gradient(45deg, #ffd700, #ffed4e);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-weight: 900;
+    text-shadow: 0 2px 4px rgba(255, 215, 0, 0.3);
+}
+
+/* Mobile responsiveness for game-over */
+@media (max-width: 768px) {
+    .game-over-content {
+        padding: 40px 25px;
+        max-width: 90%;
+        margin: 10px;
+    }
+    
+    .game-over-content h2 {
+        font-size: 2.5rem;
+    }
+    
+    .game-over-content p {
+        font-size: 1.1rem;
+    }
+    
+    #new-game-btn {
+        padding: 15px 25px;
+        font-size: 1.1rem;
+    }
 }
 
 /* Fire animation for when the final stack is burned */

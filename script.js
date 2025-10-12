@@ -1049,20 +1049,92 @@ class Game {
         AnalyticsService.trackGameEnd(won, remainingCards);
         
         if (won) {
-            this.elements.gameOverTitle.textContent = 'Congratulations!';
+            this.elements.gameOverTitle.textContent = '🎉 Congratulations!';
             this.elements.gameOverTitle.style.color = '#4caf50';
-            this.elements.gameOverMessage.textContent = `You beat the deck! All cards have been used.\nYour longest streak was ${this.longestStreak}`;
+            this.elements.gameOverMessage.innerHTML = `
+                <div style="margin-bottom: 15px; font-size: 1.4rem; font-weight: 600; color: #2e7d32;">
+                    🏆 You beat the deck! 🏆
+                </div>
+                <div style="margin-bottom: 10px;">
+                    All 52 cards successfully placed!
+                </div>
+                <div style="font-size: 1.1rem; color: #666;">
+                    Your longest streak was <strong style="color: #4caf50;">${this.longestStreak}</strong>
+                </div>
+            `;
         } else {
-            this.elements.gameOverTitle.textContent = 'Oh No!';
-            this.elements.gameOverTitle.style.color = '#f44336';
-            if (remainingCards === 0) {
-                this.elements.gameOverMessage.textContent = `You used your final card but were unable to Beat The Deck! Better luck next time!\nYour longest streak was ${this.longestStreak}`;
+            // Different messaging based on performance
+            const streakPercentage = Math.round((this.longestStreak / 52) * 100);
+            
+            if (this.longestStreak >= 20) {
+                this.elements.gameOverTitle.textContent = '🎯 So Close!';
+                this.elements.gameOverTitle.style.color = '#ff9800';
+                this.elements.gameOverMessage.innerHTML = `
+                    <div style="margin-bottom: 15px; font-size: 1.4rem; font-weight: 600; color: #f57c00;">
+                        Excellent performance! 🔥
+                    </div>
+                    <div style="margin-bottom: 10px;">
+                        ${remainingCards} cards remaining
+                    </div>
+                    <div style="font-size: 1.1rem; color: #666;">
+                        Your longest streak was <strong style="color: #ff9800;">${this.longestStreak}</strong> (${streakPercentage}% of the deck!)
+                    </div>
+                `;
+            } else if (this.longestStreak >= 10) {
+                this.elements.gameOverTitle.textContent = '💪 Good Try!';
+                this.elements.gameOverTitle.style.color = '#ff9800';
+                this.elements.gameOverMessage.innerHTML = `
+                    <div style="margin-bottom: 15px; font-size: 1.4rem; font-weight: 600; color: #f57c00;">
+                        Not bad at all! 🚀
+                    </div>
+                    <div style="margin-bottom: 10px;">
+                        ${remainingCards} cards remaining
+                    </div>
+                    <div style="font-size: 1.1rem; color: #666;">
+                        Your longest streak was <strong style="color: #ff9800;">${this.longestStreak}</strong>
+                    </div>
+                `;
             } else {
-                this.elements.gameOverMessage.textContent = `${remainingCards} cards were still remaining. Better luck next time!\nYour longest streak was ${this.longestStreak}`;
+                this.elements.gameOverTitle.textContent = '🎮 Keep Going!';
+                this.elements.gameOverTitle.style.color = '#f44336';
+                this.elements.gameOverMessage.innerHTML = `
+                    <div style="margin-bottom: 15px; font-size: 1.4rem; font-weight: 600; color: #d32f2f;">
+                        Every game makes you better! 💪
+                    </div>
+                    <div style="margin-bottom: 10px;">
+                        ${remainingCards} cards remaining
+                    </div>
+                    <div style="font-size: 1.1rem; color: #666;">
+                        Your longest streak was <strong style="color: #f44336;">${this.longestStreak}</strong>
+                    </div>
+                `;
             }
         }
         
+        // Show with animation
         this.elements.gameOver.style.display = 'flex';
+        setTimeout(() => {
+            this.elements.gameOver.classList.add('show');
+        }, 100);
+        
+        // Add keyboard support for game over modal
+        this.addGameOverKeyboardSupport();
+    }
+
+    addGameOverKeyboardSupport() {
+        const handleKeyPress = (e) => {
+            if (this.gameState === 'game-over' && (e.key === 'Enter' || e.key === ' ' || e.key === 'Escape')) {
+                e.preventDefault();
+                this.startNewGame();
+            }
+        };
+        
+        // Remove any existing listener
+        document.removeEventListener('keydown', this.gameOverKeyHandler);
+        
+        // Add new listener
+        this.gameOverKeyHandler = handleKeyPress;
+        document.addEventListener('keydown', this.gameOverKeyHandler);
     }
 
     startNewGame() {
@@ -1091,9 +1163,17 @@ class Game {
         this.tempXOffset = null; // Reset temporary offset
         this.tempYOffset = null; // Reset temporary offset
         
-        // Hide game over screen
+        // Hide game over screen with animation
         if (this.elements.gameOver) {
-            this.elements.gameOver.style.display = 'none';
+            this.elements.gameOver.classList.remove('show');
+            setTimeout(() => {
+                this.elements.gameOver.style.display = 'none';
+                // Clean up keyboard listener
+                if (this.gameOverKeyHandler) {
+                    document.removeEventListener('keydown', this.gameOverKeyHandler);
+                    this.gameOverKeyHandler = null;
+                }
+            }, 400);
         } else {
             console.error('Game over div not found');
         }
