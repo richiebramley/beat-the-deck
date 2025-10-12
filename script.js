@@ -33,11 +33,57 @@ class UserService {
 
     updateUserName(newName) {
         if (newName && newName.trim().length > 0 && newName.trim().length <= 20) {
-            this.currentUser.name = newName.trim();
+            const trimmedName = newName.trim();
+            
+            // Check for profanity
+            if (this.containsProfanity(trimmedName)) {
+                return false;
+            }
+            
+            this.currentUser.name = trimmedName;
             localStorage.setItem('beatTheDeckUser', JSON.stringify(this.currentUser));
             return true;
         }
         return false;
+    }
+
+    containsProfanity(name) {
+        // Moderate profanity filter - common inappropriate words
+        const profanityList = [
+            // Explicit words
+            'fuck', 'shit', 'damn', 'bitch', 'asshole', 'piss', 'crap', 'hell',
+            'bastard', 'whore', 'slut', 'pussy', 'dick', 'cock', 'tits', 'boobs',
+            'sex', 'porn', 'nude', 'naked', 'rape', 'kill', 'murder', 'suicide',
+            'drug', 'cocaine', 'heroin', 'marijuana', 'weed', 'alcohol',
+            
+            // Variations and common misspellings
+            'f*ck', 'f**k', 'sh*t', 's**t', 'd*mn', 'd**n', 'b*tch', 'b**ch',
+            'a**hole', 'a**h***', 'p*ss', 'p**s', 'cr*p', 'h*ll', 'h**l',
+            'fck', 'fuk', 'sh1t', 'sh!t', 'd4mn', 'd4mn', 'b1tch', 'b!tch',
+            
+            // Racial slurs and hate speech
+            'nigger', 'nigga', 'chink', 'gook', 'kike', 'spic', 'wetback',
+            'towelhead', 'raghead', 'fag', 'faggot', 'dyke', 'tranny',
+            
+            // Variations of racial slurs
+            'n*gg*r', 'n*gga', 'ch*nk', 'g**k', 'k*ke', 'sp*c', 'f*g',
+            'n1gg3r', 'n1gga', 'ch1nk', 'g00k', 'k1ke', 'sp1c',
+            
+            // Extremely offensive terms
+            'hitler', 'nazi', 'kkk', 'isis', 'terrorist', 'bomb', 'explosive'
+        ];
+
+        const lowerName = name.toLowerCase();
+        
+        // Check for exact matches and partial matches
+        return profanityList.some(word => {
+            // Exact word match
+            if (lowerName === word) return true;
+            
+            // Word boundary matches (prevents false positives like "classic")
+            const regex = new RegExp('\\b' + word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\b', 'i');
+            return regex.test(lowerName);
+        });
     }
 
     getUserName() {
@@ -527,7 +573,16 @@ class Game {
             // Refresh leaderboard to show updated name
             this.loadLeaderboardRecords();
         } else {
-            alert('Please enter a valid name (1-20 characters)');
+            // Check if it's a profanity issue or length issue
+            if (newName.length === 0) {
+                alert('Please enter a name');
+            } else if (newName.length > 20) {
+                alert('Name must be 20 characters or less');
+            } else if (this.userService.containsProfanity(newName)) {
+                alert('Please choose a different name');
+            } else {
+                alert('Please enter a valid name (1-20 characters)');
+            }
         }
     }
 
