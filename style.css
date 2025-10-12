@@ -968,11 +968,6 @@ h1 {
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
 }
 
-.how-to-icon {
-    font-size: 2rem;
-    margin-bottom: 10px;
-    display: block;
-}
 
 .how-to-section h3 {
     color: #4caf50;
@@ -1214,9 +1209,6 @@ h1 {
         padding: 15px;
     }
     
-    .how-to-icon {
-        font-size: 1.8rem;
-    }
     
     .how-to-section h3 {
         font-size: 1.2rem;
