@@ -30,11 +30,21 @@ class UserService {
     }
 
     generateRandomName() {
-        const adjectives = ['Swift', 'Bold', 'Clever', 'Lucky', 'Sharp', 'Quick', 'Bright', 'Wise', 'Brave', 'Smart'];
-        const nouns = ['Player', 'Gamer', 'Champion', 'Master', 'Hero', 'Ace', 'Star', 'Legend', 'Pro', 'Wizard'];
-        const adjective = adjectives[Math.floor(Math.random() * adjectives.length)];
-        const noun = nouns[Math.floor(Math.random() * nouns.length)];
-        return `${adjective}${noun}${Math.floor(Math.random() * 999) + 1}`;
+        const adjectives = ['Swift', 'Bold', 'Clever', 'Lucky', 'Sharp', 'Quick', 'Bright', 'Wise', 'Brave', 'Smart', 'Fast', 'Cool', 'Epic', 'Super', 'Mega', 'Ultra', 'Pro', 'Elite', 'Prime', 'Alpha'];
+        const nouns = ['Player', 'Gamer', 'Champion', 'Master', 'Hero', 'Ace', 'Star', 'Legend', 'Pro', 'Wizard', 'Ninja', 'Warrior', 'Hunter', 'Ranger', 'Mage', 'Knight', 'Pilot', 'Captain', 'Chief', 'Boss'];
+        
+        let attempts = 0;
+        let name;
+        
+        do {
+            const adjective = adjectives[Math.floor(Math.random() * adjectives.length)];
+            const noun = nouns[Math.floor(Math.random() * nouns.length)];
+            const number = Math.floor(Math.random() * 9999) + 1;
+            name = `${adjective}${noun}${number}`;
+            attempts++;
+        } while (this.isNameTaken(name) && attempts < 50); // Prevent infinite loop
+        
+        return name;
     }
 
     updateUserName(newName) {
@@ -51,6 +61,11 @@ class UserService {
                 return false;
             }
             
+            // Check for duplicate names
+            if (this.isNameTaken(trimmedName)) {
+                return false;
+            }
+            
             this.currentUser.name = trimmedName;
             this.currentUser.nameEdited = true;
             localStorage.setItem('beatTheDeckUser', JSON.stringify(this.currentUser));
@@ -61,6 +76,23 @@ class UserService {
 
     canEditName() {
         return !this.currentUser.nameEdited;
+    }
+
+    isNameTaken(name) {
+        // Check leaderboard records for existing names
+        const leaderboardData = localStorage.getItem('beatTheDeckLeaderboard');
+        if (leaderboardData) {
+            try {
+                const records = JSON.parse(leaderboardData);
+                return records.some(record => 
+                    record.userName && record.userName.toLowerCase() === name.toLowerCase()
+                );
+            } catch (error) {
+                console.error('Error checking for duplicate names:', error);
+                return false;
+            }
+        }
+        return false;
     }
 
     containsProfanity(name) {
@@ -184,7 +216,14 @@ class LeaderboardService {
     }
 
     getRecords() {
-        return [...this.records]; // Return copy
+        // Sort by: Cards Dealt (highest to lowest), then by Longest Streak (highest to lowest)
+        return [...this.records]
+            .sort((a, b) => {
+                // Primary sort: Cards Dealt (highest to lowest)
+                if (a.cardsUsed !== b.cardsUsed) return b.cardsUsed - a.cardsUsed;
+                // Secondary sort: Longest Streak (highest to lowest)
+                return b.longestStreak - a.longestStreak;
+            });
     }
 
     getUserRecords(userId) {
@@ -192,12 +231,13 @@ class LeaderboardService {
     }
 
     getTopRecords(limit = 10) {
-        // Sort by: won games first, then by lowest stacks remaining, then by highest streak
+        // Sort by: Cards Dealt (highest to lowest), then by Longest Streak (highest to lowest)
         return [...this.records]
             .sort((a, b) => {
-                if (a.gameWon !== b.gameWon) return b.gameWon - a.gameWon; // Wins first
-                if (a.gameWon) return b.stacksRemaining - a.stacksRemaining; // Fewer remaining stacks first for wins
-                return b.longestStreak - a.longestStreak; // Higher streak first for losses
+                // Primary sort: Cards Dealt (highest to lowest)
+                if (a.cardsUsed !== b.cardsUsed) return b.cardsUsed - a.cardsUsed;
+                // Secondary sort: Longest Streak (highest to lowest)
+                return b.longestStreak - a.longestStreak;
             })
             .slice(0, limit);
     }
@@ -644,6 +684,8 @@ class Game {
                 alert('Please enter a name');
             } else if (newName.length > 20) {
                 alert('Name must be 20 characters or less');
+            } else if (this.userService.isNameTaken(newName)) {
+                alert('This name is already taken. Please choose a different name.');
             } else if (this.userService.containsProfanity(newName)) {
                 alert('Please choose a different name');
             } else {
