@@ -328,6 +328,7 @@ class Game {
             gameOverTitle: document.getElementById('game-over-title'),
             gameOverMessage: document.getElementById('game-over-message'),
             newGameBtn: document.getElementById('new-game-btn'),
+            viewLeaderboardBtn: document.getElementById('view-leaderboard-btn'),
             menuOverlay: document.getElementById('menu-overlay'),
             hamburgerMenu: document.getElementById('hamburger-menu'),
             closeMenu: document.getElementById('close-menu'),
@@ -399,6 +400,8 @@ class Game {
                 this.startNewGame();
                 // Track new game
                 AnalyticsService.trackGameStart();
+            } else if (e.target && e.target.id === 'view-leaderboard-btn') {
+                this.closeGameOverAndOpenLeaderboard();
             } else if (e.target && e.target.id === 'sneak-peak-btn') {
                 this.useSneakPeak();
             } else if (e.target && e.target.id === 'peek-next-btn') {
@@ -657,6 +660,22 @@ class Game {
         `;
 
         return div;
+    }
+
+    closeGameOverAndOpenLeaderboard() {
+        // Close game over modal
+        this.elements.gameOver.classList.remove('show');
+        setTimeout(() => {
+            this.elements.gameOver.style.display = 'none';
+            // Clean up keyboard listener
+            if (this.gameOverKeyHandler) {
+                document.removeEventListener('keydown', this.gameOverKeyHandler);
+                this.gameOverKeyHandler = null;
+            }
+            
+            // Open leaderboard
+            this.openLeaderboard();
+        }, 400);
     }
 
     renderFaceUpCards() {
