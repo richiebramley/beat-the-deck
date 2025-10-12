@@ -1095,12 +1095,9 @@ class Game {
                     </div>
                 `;
             } else {
-                this.elements.gameOverTitle.textContent = '🎮 Keep Going!';
+                this.elements.gameOverTitle.textContent = 'Nice try!';
                 this.elements.gameOverTitle.style.color = '#f44336';
                 this.elements.gameOverMessage.innerHTML = `
-                    <div style="margin-bottom: 15px; font-size: 1.4rem; font-weight: 600; color: #d32f2f;">
-                        Every game makes you better! 💪
-                    </div>
                     <div style="margin-bottom: 10px;">
                         ${remainingCards} cards remaining
                     </div>
