@@ -1499,6 +1499,99 @@ h1 {
     padding: 20px 30px;
 }
 
+/* Leaderboard Table */
+.leaderboard-table {
+    width: 100%;
+}
+
+.table-header {
+    display: grid;
+    grid-template-columns: 60px 1fr 100px 120px 100px;
+    gap: 15px;
+    padding: 15px 20px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    margin-bottom: 10px;
+    font-weight: 700;
+    color: #ffd700;
+    text-transform: uppercase;
+    font-size: 0.9rem;
+    letter-spacing: 0.5px;
+}
+
+.table-body {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.table-row {
+    display: grid;
+    grid-template-columns: 60px 1fr 100px 120px 100px;
+    gap: 15px;
+    padding: 15px 20px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: all 0.3s ease;
+    align-items: center;
+}
+
+.table-row:hover {
+    background: rgba(255, 255, 255, 0.08);
+    transform: translateY(-1px);
+}
+
+.table-row.win {
+    border-left: 4px solid #4caf50;
+    background: rgba(76, 175, 80, 0.1);
+}
+
+.table-row.loss {
+    border-left: 4px solid #f44336;
+    background: rgba(244, 67, 54, 0.1);
+}
+
+.table-cell {
+    display: flex;
+    align-items: center;
+    color: #fff;
+    font-size: 1rem;
+}
+
+.rank-cell {
+    justify-content: center;
+}
+
+.rank-number {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #ffd700;
+}
+
+.rank-number.top-3 {
+    background: linear-gradient(45deg, #ffd700, #ffed4e);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.user-cell {
+    font-weight: 600;
+}
+
+.stat-value {
+    font-weight: 600;
+}
+
+.stat-value.win {
+    color: #4caf50;
+}
+
+.stat-value.loss {
+    color: #f44336;
+}
+
 .record-item {
     display: flex;
     align-items: center;
@@ -1597,6 +1690,53 @@ h1 {
     font-size: 1.1rem;
     padding: 40px 20px;
     font-style: italic;
+}
+
+/* Responsive Table Design */
+@media (max-width: 768px) {
+    .table-header {
+        grid-template-columns: 50px 1fr 80px 100px 80px;
+        gap: 10px;
+        padding: 12px 15px;
+        font-size: 0.8rem;
+    }
+    
+    .table-row {
+        grid-template-columns: 50px 1fr 80px 100px 80px;
+        gap: 10px;
+        padding: 12px 15px;
+    }
+    
+    .table-cell {
+        font-size: 0.9rem;
+    }
+    
+    .rank-number {
+        font-size: 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .table-header {
+        grid-template-columns: 40px 1fr 70px 80px 70px;
+        gap: 8px;
+        padding: 10px 12px;
+        font-size: 0.75rem;
+    }
+    
+    .table-row {
+        grid-template-columns: 40px 1fr 70px 80px 70px;
+        gap: 8px;
+        padding: 10px 12px;
+    }
+    
+    .table-cell {
+        font-size: 0.85rem;
+    }
+    
+    .rank-number {
+        font-size: 0.9rem;
+    }
 }
 
 /* Name Edit Modal */

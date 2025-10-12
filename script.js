@@ -10,11 +10,17 @@ class UserService {
             user = {
                 id: this.generateUserId(),
                 name: this.generateRandomName(),
-                createdAt: new Date().toISOString()
+                createdAt: new Date().toISOString(),
+                nameEdited: false
             };
             localStorage.setItem('beatTheDeckUser', JSON.stringify(user));
         } else {
             user = JSON.parse(user);
+            // Ensure nameEdited property exists for existing users
+            if (user.nameEdited === undefined) {
+                user.nameEdited = false;
+                localStorage.setItem('beatTheDeckUser', JSON.stringify(user));
+            }
         }
         return user;
     }
@@ -32,6 +38,11 @@ class UserService {
     }
 
     updateUserName(newName) {
+        // Check if user has already edited their name
+        if (this.currentUser.nameEdited) {
+            return false;
+        }
+        
         if (newName && newName.trim().length > 0 && newName.trim().length <= 20) {
             const trimmedName = newName.trim();
             
@@ -41,10 +52,15 @@ class UserService {
             }
             
             this.currentUser.name = trimmedName;
+            this.currentUser.nameEdited = true;
             localStorage.setItem('beatTheDeckUser', JSON.stringify(this.currentUser));
             return true;
         }
         return false;
+    }
+
+    canEditName() {
+        return !this.currentUser.nameEdited;
     }
 
     containsProfanity(name) {
@@ -125,7 +141,10 @@ class LeaderboardService {
     }
 
     addRecord(userId, userName, stacksRemaining, longestStreak, gameWon, cardsDealt, timestamp = new Date().toISOString()) {
-        const record = {
+        // Check if user already has a record
+        const existingRecordIndex = this.records.findIndex(record => record.userId === userId);
+        
+        const newRecord = {
             id: this.generateRecordId(),
             userId: userId,
             userName: userName,
@@ -136,7 +155,20 @@ class LeaderboardService {
             cardsUsed: cardsDealt
         };
         
-        this.records.unshift(record); // Add to beginning for newest first
+        if (existingRecordIndex !== -1) {
+            // User already has a record - check if new score is better
+            const existingRecord = this.records[existingRecordIndex];
+            const isBetterScore = cardsDealt > existingRecord.cardsUsed;
+            
+            if (isBetterScore) {
+                // Overwrite existing record with better score
+                this.records[existingRecordIndex] = newRecord;
+            }
+            // If not better, don't add new record
+        } else {
+            // New user - add their record
+            this.records.unshift(newRecord);
+        }
         
         // Keep only last 100 records to prevent localStorage bloat
         if (this.records.length > 100) {
@@ -144,7 +176,7 @@ class LeaderboardService {
         }
         
         this.saveRecords();
-        return record;
+        return newRecord;
     }
 
     generateRecordId() {
@@ -496,8 +528,21 @@ class Game {
         // Update current user name display
         this.elements.currentUserName.textContent = this.userService.getUserName();
         
+        // Check if user can edit name and update button accordingly
+        this.updateEditNameButton();
+        
         // Load initial records
         this.loadLeaderboardRecords('all');
+    }
+
+    updateEditNameButton() {
+        if (this.userService.canEditName()) {
+            this.elements.editNameBtn.style.display = 'block';
+            this.elements.editNameBtn.disabled = false;
+        } else {
+            this.elements.editNameBtn.style.display = 'none';
+            this.elements.editNameBtn.disabled = true;
+        }
     }
 
     bindLeaderboardEvents() {
@@ -587,11 +632,15 @@ class Game {
         if (this.userService.updateUserName(newName)) {
             this.elements.currentUserName.textContent = newName;
             this.closeNameEditor();
+            // Update edit button visibility since name can no longer be edited
+            this.updateEditNameButton();
             // Refresh leaderboard to show updated name
             this.loadLeaderboardRecords();
         } else {
-            // Check if it's a profanity issue or length issue
-            if (newName.length === 0) {
+            // Check if user has already edited their name
+            if (this.userService.canEditName() === false) {
+                alert('You can only edit your name once');
+            } else if (newName.length === 0) {
                 alert('Please enter a name');
             } else if (newName.length > 20) {
                 alert('Name must be 20 characters or less');
@@ -638,42 +687,45 @@ class Game {
             return;
         }
 
-        records.forEach((record, index) => {
-            const recordElement = this.createRecordElement(record, index + 1, tab);
-            container.appendChild(recordElement);
-        });
-    }
-
-    createRecordElement(record, rank, tab) {
-        const div = document.createElement('div');
-        div.className = `record-item ${record.gameWon ? 'win' : 'loss'}`;
-
-        const rankClass = rank <= 3 ? 'top-3' : '';
-        const date = new Date(record.timestamp).toLocaleDateString();
-        
-        div.innerHTML = `
-            <div class="record-rank ${rankClass}">${rank}</div>
-            <div class="record-info">
-                <div class="record-name">${record.userName}</div>
-                <div class="record-stats">
-                    <div class="record-stat">
-                        <div class="record-stat-label">Active Stacks</div>
-                        <div class="record-stat-value ${record.gameWon ? 'win' : 'loss'}">${record.stacksRemaining}</div>
-                    </div>
-                    <div class="record-stat">
-                        <div class="record-stat-label">Longest Streak</div>
-                        <div class="record-stat-value">${record.longestStreak}</div>
-                    </div>
-                    <div class="record-stat">
-                        <div class="record-stat-label">Cards Dealt</div>
-                        <div class="record-stat-value">${record.cardsUsed}</div>
-                    </div>
+        // Create table structure
+        const tableHTML = `
+            <div class="leaderboard-table">
+                <div class="table-header">
+                    <div class="header-rank">Rank</div>
+                    <div class="header-user">User</div>
+                    <div class="header-stacks">Active Stacks</div>
+                    <div class="header-streak">Longest Streak</div>
+                    <div class="header-cards">Cards Dealt</div>
                 </div>
-                <div class="record-date">${date}</div>
+                <div class="table-body">
+                    ${records.map((record, index) => this.createTableRow(record, index + 1)).join('')}
+                </div>
             </div>
         `;
+        
+        container.innerHTML = tableHTML;
+    }
 
-        return div;
+    createTableRow(record, rank) {
+        const rankClass = rank <= 3 ? 'top-3' : '';
+        
+        return `
+            <div class="table-row ${record.gameWon ? 'win' : 'loss'}">
+                <div class="table-cell rank-cell">
+                    <span class="rank-number ${rankClass}">${rank}</span>
+                </div>
+                <div class="table-cell user-cell">${record.userName}</div>
+                <div class="table-cell stacks-cell">
+                    <span class="stat-value ${record.gameWon ? 'win' : 'loss'}">${record.stacksRemaining}</span>
+                </div>
+                <div class="table-cell streak-cell">
+                    <span class="stat-value">${record.longestStreak}</span>
+                </div>
+                <div class="table-cell cards-cell">
+                    <span class="stat-value">${record.cardsUsed}</span>
+                </div>
+            </div>
+        `;
     }
 
     closeGameOverAndOpenLeaderboard() {
@@ -686,6 +738,9 @@ class Game {
                 document.removeEventListener('keydown', this.gameOverKeyHandler);
                 this.gameOverKeyHandler = null;
             }
+            
+            // Start a new game automatically
+            this.startNewGame();
             
             // Open leaderboard
             this.openLeaderboard();
