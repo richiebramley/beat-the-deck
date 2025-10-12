@@ -764,6 +764,7 @@ h1 {
     top: 50%;
     transform: translateY(-50%);
     display: flex;
+    flex-direction: column;
     align-items: center;
     gap: 10px;
 }
@@ -1814,6 +1815,7 @@ h1 {
         right: auto;
         top: auto;
         display: flex;
+        flex-direction: column;
         align-items: center;
         gap: 10px;
     }
