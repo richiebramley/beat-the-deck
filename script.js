@@ -7,7 +7,7 @@ const API_BASE_URL = (() => {
     }
     // For production, use Railway URL
     // TODO: Replace with your actual Railway deployment URL
-    return 'https://beat-the-deck-api.up.railway.app'; // Update this with your Railway URL
+    return 'beat-the-deck-production.up.railway.app'; // Update this with your Railway URL
 })();
 
 // User Management Service - Handle user names and persistence
