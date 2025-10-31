@@ -95,19 +95,35 @@ async function cleanupDuplicates() {
 
 async function connectDB() {
     try {
+        console.log("Starting MongoDB connection...");
+        
+        // Check if MONGODB_URI is set
+        if (!process.env.MONGODB_URI) {
+            console.error("ERROR: MONGODB_URI environment variable is not set!");
+            console.error("Please set MONGODB_URI in Railway environment variables.");
+            process.exit(1);
+        }
+        
+        console.log("MONGODB_URI is set (hiding value for security)");
+        console.log("Attempting to connect to MongoDB Atlas...");
+        
         await client.connect();
+        console.log("MongoDB client connected successfully");
+        
         db = client.db("beatTheDeck");
         scores = db.collection("leaderboard");
+        console.log("Database and collection references created");
         
         // Create unique index on username to ensure one entry per user
         // If duplicates exist, keep the best score for each user
         try {
             // First, clean up any existing duplicates (keep best score per user)
+            console.log("Checking for duplicate entries...");
             await cleanupDuplicates();
             
             // Then create unique index
             await scores.createIndex({ username: 1 }, { unique: true });
-            console.log("Unique index on username created");
+            console.log("✓ Unique index on username created");
         } catch (error) {
             // Index might already exist or there might be duplicates
             console.log("Index creation note:", error.message);
@@ -115,9 +131,15 @@ async function connectDB() {
             await cleanupDuplicates();
         }
         
-        console.log("Connected to MongoDB Atlas");
+        console.log("✓ Connected to MongoDB Atlas successfully");
     } catch (error) {
-        console.error("Failed to connect to MongoDB:", error);
+        console.error("✗ Failed to connect to MongoDB Atlas");
+        console.error("Error details:", error.message);
+        if (error.message.includes('authentication')) {
+            console.error("This appears to be an authentication error. Check your MongoDB username and password.");
+        } else if (error.message.includes('network')) {
+            console.error("This appears to be a network error. Check MongoDB Atlas Network Access settings.");
+        }
         process.exit(1);
     }
 }
@@ -243,12 +265,27 @@ app.get("/health", (req, res) => {
 // Start server
 const PORT = process.env.PORT || 3000;
 
+console.log("=".repeat(50));
+console.log("Beat the Deck Leaderboard API");
+console.log("=".repeat(50));
+console.log(`PORT: ${PORT}`);
+console.log(`NODE_ENV: ${process.env.NODE_ENV || 'not set'}`);
+console.log(`MONGODB_URI: ${process.env.MONGODB_URI ? 'SET (hidden)' : 'NOT SET - THIS WILL CAUSE FAILURE!'}`);
+console.log("=".repeat(50));
+
 connectDB().then(() => {
     app.listen(PORT, () => {
-        console.log(`Leaderboard API running on port ${PORT}`);
+        console.log("=".repeat(50));
+        console.log(`✓ Server started successfully`);
+        console.log(`✓ Listening on port ${PORT}`);
+        console.log(`✓ Ready to accept requests`);
+        console.log("=".repeat(50));
     });
 }).catch((error) => {
-    console.error("Failed to start server:", error);
+    console.error("=".repeat(50));
+    console.error("✗ Failed to start server");
+    console.error("Error:", error.message);
+    console.error("=".repeat(50));
     process.exit(1);
 });
 
