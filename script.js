@@ -1,3 +1,6 @@
+// API Configuration
+const API_BASE_URL = 'http://localhost:3000'; // Local development - update to Railway URL when deployed
+
 // User Management Service - Handle user names and persistence
 class UserService {
     constructor() {
@@ -441,10 +444,12 @@ class Game {
             // viewLeaderboardBtn: document.getElementById('view-leaderboard-btn'), // Disabled
             menuOverlay: document.getElementById('menu-overlay'),
             hamburgerMenu: document.getElementById('hamburger-menu'),
-            closeMenu: document.getElementById('close-menu')
-            // leaderboardBtn: document.getElementById('leaderboard-btn'), // Disabled
-            // leaderboardOverlay: document.getElementById('leaderboard-overlay'), // Disabled
-            // closeLeaderboard: document.getElementById('close-leaderboard'), // Disabled
+            closeMenu: document.getElementById('close-menu'),
+            leaderboardBtn: document.getElementById('leaderboard-btn'),
+            leaderboardOverlay: document.getElementById('leaderboard-overlay'),
+            closeLeaderboard: document.getElementById('close-leaderboard'),
+            leaderboardList: document.getElementById('leaderboard-list'),
+            leaderboardLoading: document.getElementById('leaderboard-loading')
             // currentUserName: document.getElementById('current-user-name'), // Disabled
             // editNameBtn: document.getElementById('edit-name-btn'), // Disabled
             // nameEditModal: document.getElementById('name-edit-modal'), // Disabled
@@ -461,7 +466,7 @@ class Game {
         
         this.initializeGame();
         this.bindEvents();
-        // this.initializeLeaderboard(); // Disabled
+        this.bindLeaderboardEvents();
     }
 
     initializeGame() {
@@ -586,6 +591,48 @@ class Game {
         // Add new listener
         this.menuKeyHandler = handleKeyPress;
         document.addEventListener('keydown', this.menuKeyHandler);
+    }
+
+    bindLeaderboardEvents() {
+        // Leaderboard button
+        if (this.elements.leaderboardBtn) {
+            this.elements.leaderboardBtn.addEventListener('click', () => {
+                this.openLeaderboard();
+            });
+        }
+
+        // Close leaderboard
+        if (this.elements.closeLeaderboard) {
+            this.elements.closeLeaderboard.addEventListener('click', () => {
+                this.closeLeaderboard();
+            });
+        }
+
+        // Click outside to close
+        if (this.elements.leaderboardOverlay) {
+            this.elements.leaderboardOverlay.addEventListener('click', (e) => {
+                if (e.target === this.elements.leaderboardOverlay) {
+                    this.closeLeaderboard();
+                }
+            });
+        }
+
+        // Keyboard support for leaderboard
+        this.addLeaderboardKeyboardSupport();
+    }
+
+    addLeaderboardKeyboardSupport() {
+        const handleKeyPress = (e) => {
+            if (this.elements.leaderboardOverlay && 
+                this.elements.leaderboardOverlay.classList.contains('show') && 
+                e.key === 'Escape') {
+                e.preventDefault();
+                this.closeLeaderboard();
+            }
+        };
+        
+        document.addEventListener('keydown', handleKeyPress);
+        this.leaderboardKeyHandler = handleKeyPress;
     }
 
     initializeLeaderboard() {
@@ -1603,16 +1650,18 @@ class Game {
         // Record in leaderboard
         // Calculate active stacks remaining (9 total stacks minus burned stacks)
         const activeStacksRemaining = this.faceUpStacks.filter(stack => stack !== 'burned').length;
-        const cardsDealt = 54 - remainingCards; // 52 regular cards + 2 jokers = 54 total
         
-        // this.leaderboardService.addRecord( // Disabled
-        //     this.userService.getUserId(),
-        //     this.userService.getUserName(),
-        //     activeStacksRemaining,
-        //     this.longestStreak,
-        //     won,
-        //     cardsDealt
-        // );
+        // Submit score to backend
+        this.submitScore({
+            username: this.userService.getUserName(),
+            stacksRemaining: activeStacksRemaining,
+            longestStreak: this.longestStreak,
+            remainingCards: remainingCards,
+            result: won ? 'win' : 'lose'
+        }).catch(error => {
+            console.error('Failed to submit score:', error);
+            // Silently fail - don't interrupt game flow
+        });
         
         if (won) {
             this.elements.gameOverTitle.textContent = '🎉 Congratulations!';
@@ -1764,6 +1813,136 @@ class Game {
         
         // Ensure game state is properly set
         this.updateGameInfo();
+    }
+
+    // Leaderboard Methods
+    async submitScore(scoreData) {
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/score`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(scoreData)
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const result = await response.json();
+            console.log('Score submitted successfully:', result);
+            return result;
+        } catch (error) {
+            console.error('Error submitting score:', error);
+            throw error;
+        }
+    }
+
+    openLeaderboard() {
+        if (this.elements.leaderboardOverlay) {
+            this.elements.leaderboardOverlay.style.display = 'flex';
+            setTimeout(() => {
+                this.elements.leaderboardOverlay.classList.add('show');
+            }, 10);
+            this.elements.leaderboardBtn.setAttribute('aria-expanded', 'true');
+            this.loadLeaderboard();
+        }
+    }
+
+    closeLeaderboard() {
+        if (this.elements.leaderboardOverlay) {
+            this.elements.leaderboardOverlay.classList.remove('show');
+            setTimeout(() => {
+                this.elements.leaderboardOverlay.style.display = 'none';
+            }, 400);
+            this.elements.leaderboardBtn.setAttribute('aria-expanded', 'false');
+        }
+    }
+
+    async loadLeaderboard() {
+        if (!this.elements.leaderboardList || !this.elements.leaderboardLoading) {
+            return;
+        }
+
+        // Show loading state
+        this.elements.leaderboardLoading.style.display = 'block';
+        this.elements.leaderboardList.innerHTML = '';
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/leaderboard`);
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const leaderboard = await response.json();
+            this.elements.leaderboardLoading.style.display = 'none';
+            this.renderLeaderboard(leaderboard);
+        } catch (error) {
+            console.error('Error loading leaderboard:', error);
+            this.elements.leaderboardLoading.style.display = 'none';
+            this.elements.leaderboardList.innerHTML = `
+                <div style="text-align: center; color: #f44336; padding: 40px;">
+                    <p>Failed to load leaderboard. Please try again later.</p>
+                </div>
+            `;
+        }
+    }
+
+    renderLeaderboard(leaderboard) {
+        if (!this.elements.leaderboardList) {
+            return;
+        }
+
+        const currentUsername = this.userService.getUserName();
+
+        if (leaderboard.length === 0) {
+            this.elements.leaderboardList.innerHTML = `
+                <div style="text-align: center; color: #e0e0e0; padding: 40px;">
+                    <p>No scores yet. Be the first to play!</p>
+                </div>
+            `;
+            return;
+        }
+
+        const listHTML = leaderboard.map((entry, index) => {
+            const rank = index + 1;
+            const isCurrentUser = entry.username === currentUsername;
+            const rankClass = rank <= 3 ? 'top-3' : '';
+            const entryClass = isCurrentUser ? 'current-user' : '';
+
+            return `
+                <div class="leaderboard-entry ${entryClass}">
+                    <div class="leaderboard-rank ${rankClass}">${rank}</div>
+                    <div class="leaderboard-username">${this.escapeHtml(entry.username)}</div>
+                    <div class="leaderboard-stat">
+                        <span class="leaderboard-stat-label">Stacks</span>
+                        <span class="leaderboard-stat-value">${entry.stacksRemaining}</span>
+                    </div>
+                    <div class="leaderboard-stat">
+                        <span class="leaderboard-stat-label">Streak</span>
+                        <span class="leaderboard-stat-value">${entry.longestStreak}</span>
+                    </div>
+                    <div class="leaderboard-stat">
+                        <span class="leaderboard-stat-label">Cards Left</span>
+                        <span class="leaderboard-stat-value">${entry.remainingCards}</span>
+                    </div>
+                    <div class="leaderboard-stat">
+                        <span class="leaderboard-stat-label">Result</span>
+                        <span class="leaderboard-stat-value ${entry.result}">${entry.result === 'win' ? 'Won' : 'Lost'}</span>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        this.elements.leaderboardList.innerHTML = listHTML;
+    }
+
+    escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
     }
 }
 

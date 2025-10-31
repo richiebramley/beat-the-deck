@@ -112,6 +112,9 @@
                     </div>
                 </div>
     <div class="header-right">
+        <button class="leaderboard-btn" id="leaderboard-btn" aria-label="Open leaderboard" aria-expanded="false">
+            <span class="leaderboard-icon">🏆</span>
+        </button>
         <button class="question-menu" id="hamburger-menu" aria-label="Open menu" aria-expanded="false">
             <span class="question-mark">?</span>
         </button>
@@ -188,8 +191,20 @@
         </div>
     </div>
 
-
-
+    <!-- Leaderboard Overlay -->
+    <div class="leaderboard-overlay" id="leaderboard-overlay">
+        <div class="leaderboard-content">
+            <div class="leaderboard-header">
+                <h2>🏆 Global Leaderboard</h2>
+                <button class="close-leaderboard" id="close-leaderboard" aria-label="Close leaderboard">×</button>
+            </div>
+            
+            <div class="leaderboard-list-container">
+                <div id="leaderboard-loading" class="leaderboard-loading">Loading leaderboard...</div>
+                <div id="leaderboard-list" class="leaderboard-list"></div>
+            </div>
+        </div>
+    </div>
 
     <script src="script.js"></script>
 </body>
