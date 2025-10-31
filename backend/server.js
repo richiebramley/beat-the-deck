@@ -16,132 +16,63 @@ const client = new MongoClient(process.env.MONGODB_URI);
 let db;
 let scores;
 
-// Compare two scores to determine if newScore is better than existingScore
-// Returns true if newScore is better, false otherwise
-function compareScores(newScore, existingScore) {
-    // 1. Winners always beat losers
-    if (newScore.result === 'win' && existingScore.result === 'lose') {
-        return true;
-    }
-    if (newScore.result === 'lose' && existingScore.result === 'win') {
-        return false;
-    }
-
-    // 2. Both are winners or both are losers - compare by stacks remaining
-    if (newScore.stacksRemaining !== existingScore.stacksRemaining) {
-        return newScore.stacksRemaining > existingScore.stacksRemaining;
-    }
-
-    // 3. Same stacks remaining - compare by longest streak
-    if (newScore.longestStreak !== existingScore.longestStreak) {
-        return newScore.longestStreak > existingScore.longestStreak;
-    }
-
-    // 4. Same stacks and streak - compare by remaining cards (lower is better)
-    if (newScore.remainingCards !== existingScore.remainingCards) {
-        return newScore.remainingCards < existingScore.remainingCards;
-    }
-
-    // 5. Everything is the same - prefer more recent (newer is better for tiebreaker)
-    return newScore.timestamp > existingScore.timestamp;
-}
-
-// Clean up duplicate entries - keep only the best score for each user
-async function cleanupDuplicates() {
-    try {
-        // Group by username and find duplicates
-        const duplicates = await scores.aggregate([
-            {
-                $group: {
-                    _id: "$username",
-                    entries: { $push: "$$ROOT" },
-                    count: { $sum: 1 }
-                }
-            },
-            {
-                $match: {
-                    count: { $gt: 1 }
-                }
-            }
-        ]).toArray();
-
-        // For each user with duplicates, keep the best entry and delete others
-        for (const duplicate of duplicates) {
-            const entries = duplicate.entries;
-            let bestEntry = entries[0];
-
-            // Find the best entry by comparing all entries
-            for (let i = 1; i < entries.length; i++) {
-                if (compareScores(entries[i], bestEntry)) {
-                    bestEntry = entries[i];
-                }
-            }
-
-            // Delete all entries for this user
-            await scores.deleteMany({ username: duplicate._id });
-
-            // Re-insert the best entry
-            await scores.insertOne(bestEntry);
-        }
-
-        if (duplicates.length > 0) {
-            console.log(`Cleaned up ${duplicates.length} duplicate user entries`);
-        }
-    } catch (error) {
-        console.error("Error cleaning up duplicates:", error);
-        // Don't fail the connection if cleanup fails
-    }
-}
-
 async function connectDB() {
     try {
-        console.log("Starting MongoDB connection...");
-        
-        // Check if MONGODB_URI is set
-        if (!process.env.MONGODB_URI) {
-            console.error("ERROR: MONGODB_URI environment variable is not set!");
-            console.error("Please set MONGODB_URI in Railway environment variables.");
-            process.exit(1);
-        }
-        
-        console.log("MONGODB_URI is set (hiding value for security)");
-        console.log("Attempting to connect to MongoDB Atlas...");
-        
         await client.connect();
-        console.log("MongoDB client connected successfully");
-        
         db = client.db("beatTheDeck");
         scores = db.collection("leaderboard");
-        console.log("Database and collection references created");
-        
-        // Create unique index on username to ensure one entry per user
-        // If duplicates exist, keep the best score for each user
-        try {
-            // First, clean up any existing duplicates (keep best score per user)
-            console.log("Checking for duplicate entries...");
-            await cleanupDuplicates();
-            
-            // Then create unique index
-            await scores.createIndex({ username: 1 }, { unique: true });
-            console.log("✓ Unique index on username created");
-        } catch (error) {
-            // Index might already exist or there might be duplicates
-            console.log("Index creation note:", error.message);
-            // Still try to cleanup duplicates
-            await cleanupDuplicates();
-        }
-        
-        console.log("✓ Connected to MongoDB Atlas successfully");
+        console.log("Connected to MongoDB Atlas");
     } catch (error) {
-        console.error("✗ Failed to connect to MongoDB Atlas");
-        console.error("Error details:", error.message);
-        if (error.message.includes('authentication')) {
-            console.error("This appears to be an authentication error. Check your MongoDB username and password.");
-        } else if (error.message.includes('network')) {
-            console.error("This appears to be a network error. Check MongoDB Atlas Network Access settings.");
-        }
+        console.error("Failed to connect to MongoDB:", error);
         process.exit(1);
     }
+}
+
+// Helper function to compare two scores
+// Returns: 1 if newScore is better, -1 if oldScore is better, 0 if equal
+function compareScores(newScore, oldScore) {
+    // 1. Winners always rank above losers
+    if (newScore.result === 'win' && oldScore.result === 'lose') {
+        return 1; // New score is better
+    }
+    if (newScore.result === 'lose' && oldScore.result === 'win') {
+        return -1; // Old score is better
+    }
+    
+    // Both have same result type, compare by ranking criteria
+    // 2. Highest stacksRemaining
+    if (newScore.stacksRemaining > oldScore.stacksRemaining) {
+        return 1;
+    }
+    if (newScore.stacksRemaining < oldScore.stacksRemaining) {
+        return -1;
+    }
+    
+    // 3. Highest longestStreak
+    if (newScore.longestStreak > oldScore.longestStreak) {
+        return 1;
+    }
+    if (newScore.longestStreak < oldScore.longestStreak) {
+        return -1;
+    }
+    
+    // 4. Lowest remainingCards
+    if (newScore.remainingCards < oldScore.remainingCards) {
+        return 1;
+    }
+    if (newScore.remainingCards > oldScore.remainingCards) {
+        return -1;
+    }
+    
+    // 5. Most recent timestamp (tiebreaker - if all else equal, update with newer score)
+    if (newScore.timestamp > oldScore.timestamp) {
+        return 1;
+    }
+    if (newScore.timestamp < oldScore.timestamp) {
+        return -1;
+    }
+    
+    return 0; // Scores are identical
 }
 
 // Save score
@@ -170,7 +101,7 @@ app.post("/api/score", async (req, res) => {
         }
 
         const trimmedUsername = username.trim();
-        const scoreDoc = {
+        const newScore = {
             username: trimmedUsername,
             stacksRemaining: Number(stacksRemaining),
             longestStreak: Number(longestStreak),
@@ -180,30 +111,35 @@ app.post("/api/score", async (req, res) => {
         };
 
         // Check if user already has an entry
-        const existingEntry = await scores.findOne({ username: trimmedUsername });
-
-        if (existingEntry) {
-            // Compare scores to determine if new score is better
-            const isNewScoreBetter = compareScores(
-                scoreDoc,
-                existingEntry
-            );
-
-            if (isNewScoreBetter) {
-                // Update existing entry with new better score
+        const existingScore = await scores.findOne({ username: trimmedUsername });
+        
+        if (existingScore) {
+            // Compare scores - only update if new score is better or equal
+            const comparison = compareScores(newScore, existingScore);
+            if (comparison >= 0) {
+                // New score is better or equal, update it
                 await scores.updateOne(
                     { username: trimmedUsername },
-                    { $set: scoreDoc }
+                    { $set: newScore }
                 );
-                res.status(200).json({ message: "Score updated successfully" });
+                res.status(200).json({ 
+                    message: "Score updated successfully",
+                    action: "updated"
+                });
             } else {
-                // New score is not better, keep existing
-                res.status(200).json({ message: "Existing score is better, no update needed" });
+                // Old score is better, keep it
+                res.status(200).json({ 
+                    message: "Score not updated - previous score was better",
+                    action: "kept_existing"
+                });
             }
         } else {
-            // First time entry, insert new
-            await scores.insertOne(scoreDoc);
-            res.status(201).json({ message: "Score saved successfully" });
+            // No existing entry, insert new one
+            await scores.insertOne(newScore);
+            res.status(201).json({ 
+                message: "Score saved successfully",
+                action: "inserted"
+            });
         }
     } catch (error) {
         console.error("Error saving score:", error);
@@ -265,27 +201,12 @@ app.get("/health", (req, res) => {
 // Start server
 const PORT = process.env.PORT || 3000;
 
-console.log("=".repeat(50));
-console.log("Beat the Deck Leaderboard API");
-console.log("=".repeat(50));
-console.log(`PORT: ${PORT}`);
-console.log(`NODE_ENV: ${process.env.NODE_ENV || 'not set'}`);
-console.log(`MONGODB_URI: ${process.env.MONGODB_URI ? 'SET (hidden)' : 'NOT SET - THIS WILL CAUSE FAILURE!'}`);
-console.log("=".repeat(50));
-
 connectDB().then(() => {
     app.listen(PORT, () => {
-        console.log("=".repeat(50));
-        console.log(`✓ Server started successfully`);
-        console.log(`✓ Listening on port ${PORT}`);
-        console.log(`✓ Ready to accept requests`);
-        console.log("=".repeat(50));
+        console.log(`Leaderboard API running on port ${PORT}`);
     });
 }).catch((error) => {
-    console.error("=".repeat(50));
-    console.error("✗ Failed to start server");
-    console.error("Error:", error.message);
-    console.error("=".repeat(50));
+    console.error("Failed to start server:", error);
     process.exit(1);
 });
 
