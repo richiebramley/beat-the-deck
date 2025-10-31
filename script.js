@@ -6,8 +6,7 @@ const API_BASE_URL = (() => {
         return 'http://localhost:3000';
     }
     // For production, use Railway URL
-    // TODO: Replace with your actual Railway deployment URL
-    return 'beat-the-deck-production.up.railway.app'; // Update this with your Railway URL
+    return 'https://beat-the-deck-production.up.railway.app';
 })();
 
 // User Management Service - Handle user names and persistence
