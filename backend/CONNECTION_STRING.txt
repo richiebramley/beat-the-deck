@@ -1,0 +1,11 @@
+Your MongoDB Connection String Template:
+
+mongodb+srv://richiebramley_db_user:<db_password>@beatthedeck.uju6avl.mongodb.net/?appName=BeatTheDeck
+
+INSTRUCTIONS:
+1. Replace <db_password> with your actual database user password
+2. Use this complete string in Railway Variables
+
+Example (if password was "mypass123"):
+mongodb+srv://richiebramley_db_user:mypass123@beatthedeck.uju6avl.mongodb.net/?appName=BeatTheDeck
+
