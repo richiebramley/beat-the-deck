@@ -1,5 +1,14 @@
 // API Configuration
-const API_BASE_URL = 'http://localhost:3000'; // Local development - update to Railway URL when deployed
+// Automatically detect environment and use appropriate URL
+const API_BASE_URL = (() => {
+    // If running on localhost, use local backend
+    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+        return 'http://localhost:3000';
+    }
+    // For production, use Railway URL
+    // TODO: Replace with your actual Railway deployment URL
+    return 'https://beat-the-deck-api.up.railway.app'; // Update this with your Railway URL
+})();
 
 // User Management Service - Handle user names and persistence
 class UserService {
@@ -441,7 +450,7 @@ class Game {
             gameOverTitle: document.getElementById('game-over-title'),
             gameOverMessage: document.getElementById('game-over-message'),
             newGameBtn: document.getElementById('new-game-btn'),
-            // viewLeaderboardBtn: document.getElementById('view-leaderboard-btn'), // Disabled
+            viewLeaderboardBtn: document.getElementById('view-leaderboard-btn'),
             menuOverlay: document.getElementById('menu-overlay'),
             hamburgerMenu: document.getElementById('hamburger-menu'),
             closeMenu: document.getElementById('close-menu'),
@@ -515,8 +524,8 @@ class Game {
                 this.startNewGame();
                 // Track new game
                 AnalyticsService.trackGameStart();
-            // } else if (e.target && e.target.id === 'view-leaderboard-btn') { // Disabled
-            //     this.closeGameOverAndOpenLeaderboard();
+            } else if (e.target && e.target.id === 'view-leaderboard-btn') {
+                this.closeGameOverAndOpenLeaderboard();
             } else if (e.target && e.target.id === 'sneak-peak-btn') {
                 this.useSneakPeak();
             } else if (e.target && e.target.id === 'peek-next-btn') {
@@ -1663,12 +1672,17 @@ class Game {
             // Silently fail - don't interrupt game flow
         });
         
+        const username = this.userService.getUserName();
+        
         if (won) {
             this.elements.gameOverTitle.textContent = '🎉 Congratulations!';
             this.elements.gameOverTitle.style.color = '#4caf50';
             this.elements.gameOverMessage.innerHTML = `
                 <div style="margin-bottom: 15px; font-size: 1.4rem; font-weight: 600; color: #2e7d32;">
                     🏆 You beat the deck! 🏆
+                </div>
+                <div style="margin-bottom: 10px; font-size: 1.2rem; font-weight: 600; color: #4caf50;">
+                    Player: <strong>${this.escapeHtml(username)}</strong>
                 </div>
                 <div style="margin-bottom: 10px;">
                     All 54 cards successfully placed!
@@ -1688,6 +1702,9 @@ class Game {
                     <div style="margin-bottom: 15px; font-size: 1.4rem; font-weight: 600; color: #f57c00;">
                         Excellent performance! 🔥
                     </div>
+                    <div style="margin-bottom: 10px; font-size: 1.2rem; font-weight: 600; color: #ff9800;">
+                        Player: <strong>${this.escapeHtml(username)}</strong>
+                    </div>
                     <div style="margin-bottom: 10px;">
                         ${remainingCards} cards remaining
                     </div>
@@ -1702,6 +1719,9 @@ class Game {
                     <div style="margin-bottom: 15px; font-size: 1.4rem; font-weight: 600; color: #f57c00;">
                         Not bad at all! 🚀
                     </div>
+                    <div style="margin-bottom: 10px; font-size: 1.2rem; font-weight: 600; color: #ff9800;">
+                        Player: <strong>${this.escapeHtml(username)}</strong>
+                    </div>
                     <div style="margin-bottom: 10px;">
                         ${remainingCards} cards remaining
                     </div>
@@ -1713,6 +1733,9 @@ class Game {
                 this.elements.gameOverTitle.textContent = 'Nice try!';
                 this.elements.gameOverTitle.style.color = '#f44336';
                 this.elements.gameOverMessage.innerHTML = `
+                    <div style="margin-bottom: 10px; font-size: 1.2rem; font-weight: 600; color: #f44336;">
+                        Player: <strong>${this.escapeHtml(username)}</strong>
+                    </div>
                     <div style="margin-bottom: 10px;">
                         ${remainingCards} cards remaining
                     </div>
@@ -1846,8 +1869,23 @@ class Game {
                 this.elements.leaderboardOverlay.classList.add('show');
             }, 10);
             this.elements.leaderboardBtn.setAttribute('aria-expanded', 'true');
-            this.loadLeaderboard();
+            this.loadLeaderboard(true); // Pass true to scroll to user entry
         }
+    }
+
+    closeGameOverAndOpenLeaderboard() {
+        // Close game over modal
+        if (this.elements.gameOver) {
+            this.elements.gameOver.classList.remove('show');
+            setTimeout(() => {
+                this.elements.gameOver.style.display = 'none';
+            }, 300);
+        }
+        
+        // Small delay then open leaderboard
+        setTimeout(() => {
+            this.openLeaderboard();
+        }, 350);
     }
 
     closeLeaderboard() {
@@ -1860,7 +1898,7 @@ class Game {
         }
     }
 
-    async loadLeaderboard() {
+    async loadLeaderboard(scrollToUser = false) {
         if (!this.elements.leaderboardList || !this.elements.leaderboardLoading) {
             return;
         }
@@ -1878,7 +1916,7 @@ class Game {
 
             const leaderboard = await response.json();
             this.elements.leaderboardLoading.style.display = 'none';
-            this.renderLeaderboard(leaderboard);
+            this.renderLeaderboard(leaderboard, scrollToUser);
         } catch (error) {
             console.error('Error loading leaderboard:', error);
             this.elements.leaderboardLoading.style.display = 'none';
@@ -1890,7 +1928,7 @@ class Game {
         }
     }
 
-    renderLeaderboard(leaderboard) {
+    renderLeaderboard(leaderboard, scrollToUser = false) {
         if (!this.elements.leaderboardList) {
             return;
         }
@@ -1906,14 +1944,17 @@ class Game {
             return;
         }
 
+        let userEntryElement = null;
+
         const listHTML = leaderboard.map((entry, index) => {
             const rank = index + 1;
             const isCurrentUser = entry.username === currentUsername;
             const rankClass = rank <= 3 ? 'top-3' : '';
             const entryClass = isCurrentUser ? 'current-user' : '';
+            const entryId = isCurrentUser ? 'current-user-entry' : `entry-${index}`;
 
             return `
-                <div class="leaderboard-entry ${entryClass}">
+                <div class="leaderboard-entry ${entryClass}" id="${entryId}" data-is-current-user="${isCurrentUser}">
                     <div class="leaderboard-rank ${rankClass}">${rank}</div>
                     <div class="leaderboard-username">${this.escapeHtml(entry.username)}</div>
                     <div class="leaderboard-stat">
@@ -1937,6 +1978,25 @@ class Game {
         }).join('');
 
         this.elements.leaderboardList.innerHTML = listHTML;
+
+        // Scroll to user's entry if requested
+        if (scrollToUser) {
+            setTimeout(() => {
+                userEntryElement = document.getElementById('current-user-entry');
+                if (userEntryElement) {
+                    userEntryElement.scrollIntoView({ 
+                        behavior: 'smooth', 
+                        block: 'center' 
+                    });
+                    
+                    // Add a flash animation
+                    userEntryElement.style.animation = 'none';
+                    setTimeout(() => {
+                        userEntryElement.style.animation = 'highlightFlash 2s ease-in-out';
+                    }, 10);
+                }
+            }, 300);
+        }
     }
 
     escapeHtml(text) {
