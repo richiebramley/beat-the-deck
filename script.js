@@ -1,5 +1,14 @@
 // API Configuration
-const API_BASE_URL = 'http://localhost:3000'; // Local development - update to Railway URL when deployed
+// Automatically detect environment and use appropriate URL
+const API_BASE_URL = (() => {
+    // If running on localhost, use local backend
+    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+        return 'http://localhost:3000';
+    }
+    // For production, use Railway deployment URL
+    // Update this with your actual Railway URL when deployed
+    return 'https://www.beatthedeck.app';
+})();
 
 // User Management Service - Handle user names and persistence
 class UserService {
