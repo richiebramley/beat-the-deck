@@ -1908,21 +1908,76 @@ class Game {
         this.elements.leaderboardList.innerHTML = '';
 
         try {
-            const response = await fetch(`${API_BASE_URL}/api/leaderboard`);
+            const apiUrl = `${API_BASE_URL}/api/leaderboard`;
+            console.log('Fetching leaderboard from:', apiUrl);
+            
+            // Create abort controller for timeout (fallback for browsers without AbortSignal.timeout)
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+            
+            const response = await fetch(apiUrl, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                signal: controller.signal
+            });
+            
+            clearTimeout(timeoutId);
+            
+            console.log('Leaderboard response status:', response.status, response.statusText);
             
             if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
+                const errorText = await response.text();
+                console.error('Leaderboard API error response:', errorText);
+                
+                // Handle 503 (Service Unavailable) - database connection pending
+                if (response.status === 503) {
+                    let errorData;
+                    try {
+                        errorData = JSON.parse(errorText);
+                    } catch (e) {
+                        errorData = { error: errorText };
+                    }
+                    throw new Error(`SERVICE_UNAVAILABLE: ${errorData.error || 'Database connection pending'}`);
+                }
+                
+                throw new Error(`HTTP ${response.status}: ${response.statusText}. ${errorText}`);
             }
 
             const leaderboard = await response.json();
+            console.log('Leaderboard data received:', leaderboard.length, 'entries');
             this.elements.leaderboardLoading.style.display = 'none';
             this.renderLeaderboard(leaderboard, scrollToUser);
         } catch (error) {
             console.error('Error loading leaderboard:', error);
+            console.error('Error details:', {
+                name: error.name,
+                message: error.message,
+                stack: error.stack,
+                apiUrl: `${API_BASE_URL}/api/leaderboard`
+            });
+            
             this.elements.leaderboardLoading.style.display = 'none';
+            
+            // Show more specific error message
+            let errorMessage = 'Failed to load leaderboard. Please try again later.';
+            if (error.message.includes('SERVICE_UNAVAILABLE')) {
+                errorMessage = 'Database is connecting. Please wait a moment and try again.';
+            } else if (error.name === 'AbortError' || error.message.includes('timeout')) {
+                errorMessage = 'Request timed out. The server may be slow or unreachable.';
+            } else if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
+                errorMessage = 'Network error. Please check your connection and ensure the API server is running.';
+            } else if (error.message.includes('HTTP 404')) {
+                errorMessage = 'API endpoint not found. The server may not be running or the URL is incorrect.';
+            } else if (error.message.includes('HTTP')) {
+                errorMessage = `Server error: ${error.message}`;
+            }
+            
             this.elements.leaderboardList.innerHTML = `
                 <div style="text-align: center; color: #f44336; padding: 40px;">
-                    <p>Failed to load leaderboard. Please try again later.</p>
+                    <p>${errorMessage}</p>
+                    <p style="font-size: 0.85em; color: #888; margin-top: 10px;">API: ${API_BASE_URL}</p>
                 </div>
             `;
         }

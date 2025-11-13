@@ -15,17 +15,34 @@ const client = new MongoClient(process.env.MONGODB_URI);
 
 let db;
 let scores;
+let isConnected = false;
 
 async function connectDB() {
     try {
         await client.connect();
         db = client.db("beatTheDeck");
         scores = db.collection("leaderboard");
+        isConnected = true;
         console.log("Connected to MongoDB Atlas");
     } catch (error) {
         console.error("Failed to connect to MongoDB:", error);
-        process.exit(1);
+        console.error("Server will start but API endpoints will return errors until MongoDB is connected");
+        isConnected = false;
+        // Retry connection every 10 seconds
+        setTimeout(connectDB, 10000);
     }
+}
+
+// Helper to check if MongoDB is connected
+function checkConnection(res) {
+    if (!isConnected) {
+        res.status(503).json({ 
+            error: "Service temporarily unavailable - database connection pending",
+            retry: true
+        });
+        return false;
+    }
+    return true;
 }
 
 // Helper function to compare two scores
@@ -77,6 +94,8 @@ function compareScores(newScore, oldScore) {
 
 // Save score
 app.post("/api/score", async (req, res) => {
+    if (!checkConnection(res)) return;
+    
     try {
         const { username, stacksRemaining, longestStreak, remainingCards, result } = req.body;
         
@@ -149,6 +168,8 @@ app.post("/api/score", async (req, res) => {
 
 // Get leaderboard
 app.get("/api/leaderboard", async (req, res) => {
+    if (!checkConnection(res)) return;
+    
     try {
         // Sort logic:
         // 1. Winners (result: 'win') before losers (result: 'lose')
@@ -195,18 +216,21 @@ app.get("/api/leaderboard", async (req, res) => {
 
 // Health check endpoint
 app.get("/health", (req, res) => {
-    res.json({ status: "ok", timestamp: Date.now() });
+    res.json({ 
+        status: "ok", 
+        timestamp: Date.now(),
+        mongodb: isConnected ? "connected" : "disconnected"
+    });
 });
 
 // Start server
 const PORT = process.env.PORT || 3000;
 
-connectDB().then(() => {
-    app.listen(PORT, () => {
-        console.log(`Leaderboard API running on port ${PORT}`);
-    });
-}).catch((error) => {
-    console.error("Failed to start server:", error);
-    process.exit(1);
+// Start the server immediately, MongoDB connection will happen in background
+app.listen(PORT, () => {
+    console.log(`Leaderboard API running on port ${PORT}`);
+    console.log("Attempting to connect to MongoDB...");
+    // Start MongoDB connection (non-blocking)
+    connectDB();
 });
 
