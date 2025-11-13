@@ -18,9 +18,32 @@ When prompted:
 - Name it: `beat-the-deck-api` (or any name you prefer)
 
 ### 3. Set MongoDB Environment Variable
+
+**First, get your MongoDB connection string:**
+
+1. Go to [MongoDB Atlas](https://cloud.mongodb.com/)
+2. Click on your cluster
+3. Click "Connect" → "Connect your application"
+4. Copy the connection string
+5. Replace `<password>` with your database password
+
+**Then set it in Railway:**
+
+**Option A: Using Railway Dashboard (Recommended)**
+1. Go to your Railway project dashboard
+2. Select your service
+3. Go to the "Variables" tab
+4. Click "New Variable"
+5. Name: `MONGODB_URI`
+6. Value: Your MongoDB connection string (e.g., `mongodb+srv://username:password@cluster.mongodb.net/?retryWrites=true&w=majority`)
+7. Click "Add"
+
+**Option B: Using Railway CLI**
 ```bash
-railway variables set MONGODB_URI="mongodb+srv://richiebramley_db_user:xZb1nn7INiQBRcqH@btd.ejdl8qt.mongodb.net/?appName=BTD"
+railway variables set MONGODB_URI="mongodb+srv://username:password@cluster.mongodb.net/?retryWrites=true&w=majority"
 ```
+
+**Important:** Make sure MongoDB Atlas Network Access allows connections from Railway (add `0.0.0.0/0` to allow all IPs, or Railway's specific IP ranges).
 
 ### 4. Deploy
 ```bash

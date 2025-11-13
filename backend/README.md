@@ -9,12 +9,17 @@ npm install
 ```
 
 ### 2. Configure Environment Variables
+
+**For a complete MongoDB setup guide, see [MONGODB_SETUP.md](./MONGODB_SETUP.md)**
+
 Create a `.env` file in the `backend` directory with your MongoDB Atlas connection string:
 
 ```
 MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/?retryWrites=true&w=majority
 PORT=3000
 ```
+
+**Important:** Replace `username` and `password` with your actual MongoDB Atlas credentials. Never commit the `.env` file to git!
 
 ### 3. Run Locally
 ```bash
@@ -45,9 +50,9 @@ npm run dev
    ```
 
 4. Add MongoDB environment variable:
-   ```bash
-   railway variables set MONGODB_URI=your_mongodb_connection_string
-   ```
+   - See [MONGODB_SETUP.md](./MONGODB_SETUP.md) for detailed instructions
+   - Or use Railway dashboard: Variables tab → Add `MONGODB_URI` with your connection string
+   - Or use CLI: `railway variables set MONGODB_URI="your_connection_string"`
 
 5. Deploy:
    ```bash
