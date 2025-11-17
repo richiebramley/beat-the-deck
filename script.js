@@ -1907,7 +1907,8 @@ class Game {
         this.elements.leaderboardList.innerHTML = '';
 
         try {
-            const apiUrl = `${API_BASE_URL}/api/leaderboard`;
+            // Add cache-busting parameter to ensure fresh data
+            const apiUrl = `${API_BASE_URL}/api/leaderboard?t=${Date.now()}`;
             console.log('Fetching leaderboard from:', apiUrl);
             
             // Create abort controller for timeout (fallback for browsers without AbortSignal.timeout)
@@ -1919,6 +1920,7 @@ class Game {
                 headers: {
                     'Content-Type': 'application/json',
                 },
+                cache: 'no-store', // Prevent browser caching
                 signal: controller.signal
             });
             

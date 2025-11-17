@@ -57,31 +57,43 @@ function compareScores(newScore, oldScore) {
     }
     
     // Both have same result type, compare by ranking criteria
-    // 2. Highest stacksRemaining
-    if (newScore.stacksRemaining > oldScore.stacksRemaining) {
-        return 1;
-    }
-    if (newScore.stacksRemaining < oldScore.stacksRemaining) {
-        return -1;
+    if (newScore.result === 'win') {
+        // For winners: Most to least Stacks remaining, then Longest Streak
+        // 1. Compare stacksRemaining (higher is better)
+        if (newScore.stacksRemaining > oldScore.stacksRemaining) {
+            return 1;
+        }
+        if (newScore.stacksRemaining < oldScore.stacksRemaining) {
+            return -1;
+        }
+        
+        // 2. Compare longestStreak (higher is better)
+        if (newScore.longestStreak > oldScore.longestStreak) {
+            return 1;
+        }
+        if (newScore.longestStreak < oldScore.longestStreak) {
+            return -1;
+        }
+    } else {
+        // For losers: Fewest to most cards left, then longest to shortest streak
+        // 1. Compare remainingCards (lower is better)
+        if (newScore.remainingCards < oldScore.remainingCards) {
+            return 1;
+        }
+        if (newScore.remainingCards > oldScore.remainingCards) {
+            return -1;
+        }
+        
+        // 2. Compare longestStreak (higher is better)
+        if (newScore.longestStreak > oldScore.longestStreak) {
+            return 1;
+        }
+        if (newScore.longestStreak < oldScore.longestStreak) {
+            return -1;
+        }
     }
     
-    // 3. Highest longestStreak
-    if (newScore.longestStreak > oldScore.longestStreak) {
-        return 1;
-    }
-    if (newScore.longestStreak < oldScore.longestStreak) {
-        return -1;
-    }
-    
-    // 4. Lowest remainingCards
-    if (newScore.remainingCards < oldScore.remainingCards) {
-        return 1;
-    }
-    if (newScore.remainingCards > oldScore.remainingCards) {
-        return -1;
-    }
-    
-    // 5. Most recent timestamp (tiebreaker - if all else equal, update with newer score)
+    // 3. Most recent timestamp (tiebreaker - if all else equal, update with newer score)
     if (newScore.timestamp > oldScore.timestamp) {
         return 1;
     }
@@ -133,28 +145,45 @@ app.post("/api/score", async (req, res) => {
         const existingScore = await scores.findOne({ username: trimmedUsername });
         
         if (existingScore) {
-            // Compare scores - only update if new score is better or equal
+            // Compare scores to determine if new score is better ranked
+            // compareScores returns: 1 if newScore is better, -1 if oldScore is better, 0 if equal
             const comparison = compareScores(newScore, existingScore);
+            const isNewScoreBetter = comparison > 0;
+            const isEqual = comparison === 0;
+            
+            console.log(`Score comparison for ${trimmedUsername}:`, {
+                new: { result: newScore.result, stacks: newScore.stacksRemaining, streak: newScore.longestStreak, cards: newScore.remainingCards },
+                old: { result: existingScore.result, stacks: existingScore.stacksRemaining, streak: existingScore.longestStreak, cards: existingScore.remainingCards },
+                comparison: comparison,
+                isNewScoreBetter: isNewScoreBetter,
+                willUpdate: comparison >= 0
+            });
+            
             if (comparison >= 0) {
-                // New score is better or equal, update it
+                // New score is better ranked or equal - override the existing score
                 await scores.updateOne(
                     { username: trimmedUsername },
                     { $set: newScore }
                 );
+                const reason = isNewScoreBetter ? "new score is better ranked" : "scores are equal (updating with newer timestamp)";
+                console.log(`✓ Updated score for ${trimmedUsername} - ${reason}`);
                 res.status(200).json({ 
                     message: "Score updated successfully",
-                    action: "updated"
+                    action: "updated",
+                    reason: reason
                 });
             } else {
-                // Old score is better, keep it
+                // Old score is better ranked - keep the existing score
+                console.log(`✗ Kept existing score for ${trimmedUsername} - previous score is better ranked`);
                 res.status(200).json({ 
-                    message: "Score not updated - previous score was better",
+                    message: "Score not updated - previous score is better ranked",
                     action: "kept_existing"
                 });
             }
         } else {
             // No existing entry, insert new one
             await scores.insertOne(newScore);
+            console.log(`✓ Inserted new score for ${trimmedUsername}`);
             res.status(201).json({ 
                 message: "Score saved successfully",
                 action: "inserted"
@@ -172,42 +201,54 @@ app.get("/api/leaderboard", async (req, res) => {
     
     try {
         // Sort logic:
-        // 1. Winners (result: 'win') before losers (result: 'lose')
-        // 2. Highest stacksRemaining
-        // 3. Highest longestStreak
-        // 4. Lowest remainingCards (only relevant for losers, but we'll sort anyway)
-        // 5. Most recent timestamp (descending)
+        // Winners: Most to least Stacks remaining, then Longest Streak
+        // Losers: Fewest to most cards left, then longest to shortest streak
+        // Winners always appear before losers
         
-        // Use aggregation pipeline to properly sort winners first
-        const leaderboard = await scores.aggregate([
+        // Use aggregation pipeline with $facet to sort winners and losers separately
+        const result = await scores.aggregate([
             {
-                $addFields: {
-                    // Create a sort key: 0 for wins, 1 for losses
-                    resultSortKey: {
-                        $cond: [{ $eq: ["$result", "win"] }, 0, 1]
-                    }
+                $facet: {
+                    winners: [
+                        { $match: { result: 'win' } },
+                        {
+                            $sort: {
+                                stacksRemaining: -1,   // Most to least stacks
+                                longestStreak: -1,     // Longest streak
+                                timestamp: -1     // Most recent first (tiebreaker)
+                            }
+                        },
+                        { $limit: 100 }
+                    ],
+                    losers: [
+                        { $match: { result: 'lose' } },
+                        {
+                            $sort: {
+                                remainingCards: 1,     // Fewest to most cards left
+                                longestStreak: -1,     // Longest to shortest streak
+                                timestamp: -1     // Most recent first (tiebreaker)
+                            }
+                        },
+                        { $limit: 100 }
+                    ]
                 }
-            },
-            {
-                $sort: {
-                    resultSortKey: 1,      // Wins (0) before losses (1)
-                    stacksRemaining: -1,   // Highest first
-                    longestStreak: -1,     // Highest first
-                    remainingCards: 1,     // Lowest first
-                    timestamp: -1          // Most recent first
-                }
-            },
-            {
-                $limit: 50
             },
             {
                 $project: {
-                    resultSortKey: 0 // Remove the temporary sort key from output
+                    leaderboard: { $concatArrays: ['$winners', '$losers'] }
                 }
-            }
+            },
+            { $unwind: '$leaderboard' },
+            { $replaceRoot: { newRoot: '$leaderboard' } },
+            { $limit: 100 }
         ]).toArray();
         
-        res.json(leaderboard);
+        // Set cache-control headers to prevent browser caching
+        res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+        res.setHeader('Pragma', 'no-cache');
+        res.setHeader('Expires', '0');
+        
+        res.json(result);
     } catch (error) {
         console.error("Error fetching leaderboard:", error);
         res.status(500).json({ error: "Internal server error" });
