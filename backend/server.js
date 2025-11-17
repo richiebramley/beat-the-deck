@@ -200,6 +200,33 @@ app.get("/api/leaderboard", async (req, res) => {
     if (!checkConnection(res)) return;
     
     try {
+        // Get month and year from query parameters, default to current month
+        const now = new Date();
+        let year = parseInt(req.query.year) || now.getFullYear();
+        let month = parseInt(req.query.month);
+        
+        // If month not provided, use current month
+        if (isNaN(month)) {
+            month = now.getMonth() + 1; // getMonth() returns 0-11, we need 1-12
+        }
+        
+        // Validate month (1-12)
+        if (month < 1 || month > 12) {
+            return res.status(400).json({ error: "Invalid month. Must be between 1 and 12." });
+        }
+        
+        // Calculate start and end of the month in milliseconds
+        const startOfMonth = new Date(year, month - 1, 1).getTime();
+        const endOfMonth = new Date(year, month, 0, 23, 59, 59, 999).getTime();
+        
+        // Build match filter for month
+        const monthMatch = {
+            timestamp: {
+                $gte: startOfMonth,
+                $lte: endOfMonth
+            }
+        };
+        
         // Sort logic:
         // Winners: Most to least Stacks remaining, then Longest Streak
         // Losers: Fewest to most cards left, then longest to shortest streak
@@ -210,7 +237,7 @@ app.get("/api/leaderboard", async (req, res) => {
             {
                 $facet: {
                     winners: [
-                        { $match: { result: 'win' } },
+                        { $match: { $and: [{ result: 'win' }, monthMatch] } },
                         {
                             $sort: {
                                 stacksRemaining: -1,   // Most to least stacks
@@ -221,7 +248,7 @@ app.get("/api/leaderboard", async (req, res) => {
                         { $limit: 100 }
                     ],
                     losers: [
-                        { $match: { result: 'lose' } },
+                        { $match: { $and: [{ result: 'lose' }, monthMatch] } },
                         {
                             $sort: {
                                 remainingCards: 1,     // Fewest to most cards left

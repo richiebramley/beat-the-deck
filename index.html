@@ -196,7 +196,15 @@
     <div class="leaderboard-overlay" id="leaderboard-overlay">
         <div class="leaderboard-content">
             <div class="leaderboard-header">
-                <h2>🏆 Global Leaderboard</h2>
+                <div class="leaderboard-header-left">
+                    <h2>🏆 Monthly Leaderboard</h2>
+                    <div class="month-selector-container">
+                        <label for="month-selector" class="month-selector-label">Month:</label>
+                        <select id="month-selector" class="month-selector" aria-label="Select month">
+                            <option value="2024-11">November 2024</option>
+                        </select>
+                    </div>
+                </div>
                 <button class="close-leaderboard" id="close-leaderboard" aria-label="Close leaderboard">×</button>
             </div>
             

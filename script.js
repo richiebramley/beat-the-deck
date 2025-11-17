@@ -457,7 +457,8 @@ class Game {
             leaderboardOverlay: document.getElementById('leaderboard-overlay'),
             closeLeaderboard: document.getElementById('close-leaderboard'),
             leaderboardList: document.getElementById('leaderboard-list'),
-            leaderboardLoading: document.getElementById('leaderboard-loading')
+            leaderboardLoading: document.getElementById('leaderboard-loading'),
+            monthSelector: document.getElementById('month-selector')
             // currentUserName: document.getElementById('current-user-name'), // Disabled
             // editNameBtn: document.getElementById('edit-name-btn'), // Disabled
             // nameEditModal: document.getElementById('name-edit-modal'), // Disabled
@@ -622,6 +623,13 @@ class Game {
                 if (e.target === this.elements.leaderboardOverlay) {
                     this.closeLeaderboard();
                 }
+            });
+        }
+
+        // Month selector change
+        if (this.elements.monthSelector) {
+            this.elements.monthSelector.addEventListener('change', () => {
+                this.loadLeaderboard(false);
             });
         }
 
@@ -1907,8 +1915,18 @@ class Game {
         this.elements.leaderboardList.innerHTML = '';
 
         try {
-            // Add cache-busting parameter to ensure fresh data
-            const apiUrl = `${API_BASE_URL}/api/leaderboard?t=${Date.now()}`;
+            // Get selected month/year from selector
+            let year = 2024;
+            let month = 11; // Default to November 2024
+            
+            if (this.elements.monthSelector && this.elements.monthSelector.value) {
+                const [selectedYear, selectedMonth] = this.elements.monthSelector.value.split('-').map(Number);
+                year = selectedYear;
+                month = selectedMonth;
+            }
+            
+            // Build API URL with month/year parameters
+            const apiUrl = `${API_BASE_URL}/api/leaderboard?year=${year}&month=${month}&t=${Date.now()}`;
             console.log('Fetching leaderboard from:', apiUrl);
             
             // Create abort controller for timeout (fallback for browsers without AbortSignal.timeout)

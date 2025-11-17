@@ -1395,12 +1395,61 @@ h1 {
     animation: shimmer 3s ease-in-out infinite;
 }
 
+.leaderboard-header-left {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    flex: 1;
+}
+
 .leaderboard-header h2 {
     color: #fff;
     margin: 0;
     font-size: 1.8rem;
     font-weight: 700;
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.month-selector-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.month-selector-label {
+    color: #e0e0e0;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.month-selector {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    color: #fff;
+    padding: 8px 12px;
+    font-size: 0.95rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    min-width: 150px;
+}
+
+.month-selector:hover {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.month-selector:focus {
+    outline: none;
+    background: rgba(255, 255, 255, 0.15);
+    border-color: #ffd700;
+    box-shadow: 0 0 0 2px rgba(255, 215, 0, 0.2);
+}
+
+.month-selector option {
+    background: #2a2a2a;
+    color: #fff;
 }
 
 .close-leaderboard {
@@ -2435,6 +2484,35 @@ h1 {
 }
 
 @media (max-width: 768px) {
+    .leaderboard-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+    
+    .leaderboard-header-left {
+        width: 100%;
+    }
+    
+    .leaderboard-header h2 {
+        font-size: 1.5rem;
+    }
+    
+    .month-selector-container {
+        width: 100%;
+    }
+    
+    .month-selector {
+        flex: 1;
+        min-width: auto;
+    }
+    
+    .close-leaderboard {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+    }
+    
     .leaderboard-list-container {
         padding: 15px;
     }
